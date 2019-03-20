@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { Menu, Layout, Typography, Calendar, Modal, message, Avatar } from 'antd'
 import moment from 'moment';
+import { getHeaders, getUserInfo } from './utils/auth';
 const { Header, Footer, Sider, Content } = Layout;
 const { Title, Paragraph } = Typography;
 
@@ -13,8 +14,10 @@ class Home extends Component{
         }
     }
     componentDidMount(){
+        console.log(getUserInfo())
         fetch("http://localhost:1337/dias", {
-            method: "GET"
+            method: "GET",
+            headers: getHeaders()
         }).then(resp => {
             resp.json().then(dias => {
                 this.setState({ dias })
@@ -49,10 +52,7 @@ class Home extends Component{
     solicitarDia = fecha => {
         fetch("http://localhost:1337/dias", {
             method: "POST",
-            headers: {
-                "Accept": "application/json",
-                "Content-Type": "application/json"
-            },
+            headers: getHeaders(),
             body: JSON.stringify({
                 fecha
             })

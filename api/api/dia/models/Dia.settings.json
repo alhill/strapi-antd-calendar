@@ -1,0 +1,46 @@
+{
+  "connection": "default",
+  "collectionName": "dia",
+  "info": {
+    "name": "dia",
+    "description": ""
+  },
+  "options": {
+    "timestamps": true
+  },
+  "attributes": {
+    "fecha": {
+      "default": "",
+      "type": "date"
+    },
+    "user": {
+      "model": "user",
+      "via": "dias",
+      "plugin": "users-permissions"
+    },
+    "equipo": {
+      "model": "equipo",
+      "via": "dias",
+      "columnName": ""
+    },
+    "estado": {
+      "default": "",
+      "type": "enumeration",
+      "enum": [
+        "",
+        "pedido",
+        "confirmado"
+      ]
+    },
+    "tipo": {
+      "default": "",
+      "type": "enumeration",
+      "enum": [
+        "",
+        "libre",
+        "remoto",
+        "festivo"
+      ]
+    }
+  }
+}

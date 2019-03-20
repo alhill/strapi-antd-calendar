@@ -1,0 +1,52 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/dias",
+      "handler": "Dia.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/dias/count",
+      "handler": "Dia.count",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/dias/:_id",
+      "handler": "Dia.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/dias",
+      "handler": "Dia.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/dias/:_id",
+      "handler": "Dia.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/dias/:_id",
+      "handler": "Dia.destroy",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}

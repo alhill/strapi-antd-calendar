@@ -9,6 +9,8 @@ import { LocaleProvider } from 'antd';
 import esES from 'antd/lib/locale-provider/es_ES';
 import moment from 'moment';
 import 'moment/locale/es';
+import { PrivateRoute } from './PrivateRoute';
+import NuevoUsuario from './NuevoUsuario';
 moment.locale('es');
 
 class App extends Component {
@@ -19,7 +21,9 @@ class App extends Component {
           <Switch>
             <Route exact path="/login" component={Login} />
             <Route exact path="/register" component={Register} />
-            <Route exact path="/calendario" component={Home} />
+            <PrivateRoute exact path="/calendario" component={Home} />
+            <PrivateRoute exact path="/nuevousuario" component={NuevoUsuario} />
+            <PrivateRoute exact path="/" component={Home} />
             <Route path="" component={FourOhFour} />
           </Switch>
         </BrowserRouter>

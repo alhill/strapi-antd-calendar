@@ -53,13 +53,13 @@
       "collection": "dia",
       "via": "user"
     },
-    "empresa": {
-      "model": "empresa",
+    "equipo": {
+      "model": "equipo",
       "via": "users"
     },
-    "managerDe": {
-      "model": "empresa",
-      "via": "managers"
+    "manager": {
+      "default": false,
+      "type": "boolean"
     }
   },
   "collectionName": "users-permissions_user"

@@ -1,10 +1,6 @@
 import React, { Component } from 'react'
 import { Form, Icon, Input, Button, Layout, Card, Row, Col } from 'antd';
-import { saveAuthData } from './utils/auth';
-
-function hasErrors(fieldsError) {
-    return Object.keys(fieldsError).some(field => fieldsError[field]);
-}
+import { saveAuthData, getHeaders } from './utils/auth';
 
 class Register extends Component{
     constructor(props){
@@ -34,16 +30,13 @@ class Register extends Component{
                     if(this.validateEmail(values.email)){
                         fetch("http://localhost:1337/auth/local/register", {
                             method: "POST",
-                            headers: {
-                                "Accept": "application/json",
-                                "Content-Type": "application/json",
-                            },
+                            headers: getHeaders(),
                             body: JSON.stringify({ 
-                                username: values.userName, password: values.password, email: values.email 
+                                username: values.userName, password: values.password, email: values.email, confirmed: false 
                             })
                         }).then(resp => {
                             resp.json().then(data => {
-                                this.saveAuthData(data)
+                                saveAuthData(data)
                                 this.props.history.push("/nuevousuario")
                             }).catch(err => console.log(err))
                         }).catch(err => console.log(err))
@@ -60,7 +53,7 @@ class Register extends Component{
     }       
 
     render(){
-        const { getFieldDecorator, getFieldsError, getFieldError, isFieldTouched } = this.props.form;
+        const { getFieldDecorator, getFieldError, isFieldTouched } = this.props.form;
         const userNameError = isFieldTouched('userName') && getFieldError('userName');
         const emailError = isFieldTouched('email') && getFieldError('email');
         const passwordError = isFieldTouched('password') && getFieldError('password');

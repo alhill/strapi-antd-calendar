@@ -6,12 +6,12 @@ type createDiaPayload {
   dia: Dia
 }
 
-input createEmpresaInput {
-  data: EmpresaInput
+input createEquipoInput {
+  data: EquipoInput
 }
 
-type createEmpresaPayload {
-  empresa: Empresa
+type createEquipoPayload {
+  equipo: Equipo
 }
 
 input createRoleInput {
@@ -43,12 +43,12 @@ type deleteDiaPayload {
   dia: Dia
 }
 
-input deleteEmpresaInput {
+input deleteEquipoInput {
   where: InputID
 }
 
-type deleteEmpresaPayload {
-  empresa: Empresa
+type deleteEquipoPayload {
+  equipo: Equipo
 }
 
 input deleteRoleInput {
@@ -73,8 +73,9 @@ type Dia {
   updatedAt: DateTime!
   fecha: DateTime
   user: UsersPermissionsUser
-  empresa: Empresa
+  equipo: Equipo
   estado: ENUM_DIA_ESTADO
+  tipo: ENUM_DIA_TIPO
 }
 
 type DiaAggregator {
@@ -97,7 +98,7 @@ type DiaConnectionCreatedAt {
   connection: DiaConnection
 }
 
-type DiaConnectionEmpresa {
+type DiaConnectionEquipo {
   key: ID
   connection: DiaConnection
 }
@@ -109,6 +110,11 @@ type DiaConnectionEstado {
 
 type DiaConnectionFecha {
   key: DateTime
+  connection: DiaConnection
+}
+
+type DiaConnectionTipo {
+  key: String
   connection: DiaConnection
 }
 
@@ -128,29 +134,31 @@ type DiaGroupBy {
   updatedAt: [DiaConnectionUpdatedAt]
   fecha: [DiaConnectionFecha]
   user: [DiaConnectionUser]
-  empresa: [DiaConnectionEmpresa]
+  equipo: [DiaConnectionEquipo]
   estado: [DiaConnectionEstado]
+  tipo: [DiaConnectionTipo]
 }
 
 input DiaInput {
   fecha: DateTime
   user: ID
-  empresa: ID
+  equipo: ID
   estado: ENUM_DIA_ESTADO
+  tipo: ENUM_DIA_TIPO
 }
 
 input editDiaInput {
   fecha: DateTime
   user: ID
-  empresa: ID
+  equipo: ID
   estado: ENUM_DIA_ESTADO
+  tipo: ENUM_DIA_TIPO
 }
 
-input editEmpresaInput {
+input editEquipoInput {
   nombre: String
   dias: [ID]
   users: [ID]
-  managers: [ID]
 }
 
 input editFileInput {
@@ -184,68 +192,71 @@ input editUserInput {
   blocked: Boolean
   role: ID
   dias: [ID]
-  empresa: ID
-  managerDe: ID
+  equipo: ID
+  manager: Boolean
 }
 
-type Empresa {
+enum ENUM_DIA_ESTADO {
+  pedido
+  confirmado
+}
+
+enum ENUM_DIA_TIPO {
+  libre
+  remoto
+  festivo
+}
+
+type Equipo {
   _id: ID!
   createdAt: DateTime!
   updatedAt: DateTime!
   nombre: String
   dias(sort: String, limit: Int, start: Int, where: JSON): [Dia]
   users(sort: String, limit: Int, start: Int, where: JSON): [UsersPermissionsUser]
-  managers(sort: String, limit: Int, start: Int, where: JSON): [UsersPermissionsUser]
 }
 
-type EmpresaAggregator {
+type EquipoAggregator {
   count: Int
 }
 
-type EmpresaConnection {
-  values: [Empresa]
-  groupBy: EmpresaGroupBy
-  aggregate: EmpresaAggregator
+type EquipoConnection {
+  values: [Equipo]
+  groupBy: EquipoGroupBy
+  aggregate: EquipoAggregator
 }
 
-type EmpresaConnection_id {
+type EquipoConnection_id {
   key: ID
-  connection: EmpresaConnection
+  connection: EquipoConnection
 }
 
-type EmpresaConnectionCreatedAt {
+type EquipoConnectionCreatedAt {
   key: DateTime
-  connection: EmpresaConnection
+  connection: EquipoConnection
 }
 
-type EmpresaConnectionNombre {
+type EquipoConnectionNombre {
   key: String
-  connection: EmpresaConnection
+  connection: EquipoConnection
 }
 
-type EmpresaConnectionUpdatedAt {
+type EquipoConnectionUpdatedAt {
   key: DateTime
-  connection: EmpresaConnection
+  connection: EquipoConnection
 }
 
-type EmpresaGroupBy {
-  _id: [EmpresaConnection_id]
-  createdAt: [EmpresaConnectionCreatedAt]
-  updatedAt: [EmpresaConnectionUpdatedAt]
-  nombre: [EmpresaConnectionNombre]
+type EquipoGroupBy {
+  _id: [EquipoConnection_id]
+  createdAt: [EquipoConnectionCreatedAt]
+  updatedAt: [EquipoConnectionUpdatedAt]
+  nombre: [EquipoConnectionNombre]
 }
 
-input EmpresaInput {
+input EquipoInput {
   nombre: String
   dias: [ID]
   users: [ID]
-  managers: [ID]
-}
-
-enum ENUM_DIA_ESTADO {
-  pedido
-  confirmado
-  denegado
 }
 
 input FileInput {
@@ -270,15 +281,15 @@ The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://
 """
 scalar JSON
 
-union Morph = UsersPermissionsMe | UsersPermissionsMeRole | Dia | createDiaPayload | updateDiaPayload | deleteDiaPayload | DiaConnection | DiaAggregator | DiaGroupBy | DiaConnection_id | DiaConnectionCreatedAt | DiaConnectionUpdatedAt | DiaConnectionFecha | DiaConnectionUser | DiaConnectionEmpresa | DiaConnectionEstado | Empresa | createEmpresaPayload | updateEmpresaPayload | deleteEmpresaPayload | EmpresaConnection | EmpresaAggregator | EmpresaGroupBy | EmpresaConnection_id | EmpresaConnectionCreatedAt | EmpresaConnectionUpdatedAt | EmpresaConnectionNombre | UploadFile | UploadFileConnection | UploadFileAggregator | UploadFileGroupBy | UploadFileConnection_id | UploadFileConnectionCreatedAt | UploadFileConnectionUpdatedAt | UploadFileConnectionName | UploadFileConnectionHash | UploadFileConnectionSha256 | UploadFileConnectionExt | UploadFileConnectionMime | UploadFileConnectionSize | UploadFileConnectionUrl | UploadFileConnectionProvider | UploadFileConnectionPublic_id | UsersPermissionsPermission | UsersPermissionsRole | createRolePayload | updateRolePayload | deleteRolePayload | UsersPermissionsRoleConnection | UsersPermissionsRoleAggregator | UsersPermissionsRoleGroupBy | UsersPermissionsRoleConnection_id | UsersPermissionsRoleConnectionName | UsersPermissionsRoleConnectionDescription | UsersPermissionsRoleConnectionType | UsersPermissionsUser | createUserPayload | updateUserPayload | deleteUserPayload | UsersPermissionsUserConnection | UsersPermissionsUserAggregator | UsersPermissionsUserGroupBy | UsersPermissionsUserConnection_id | UsersPermissionsUserConnectionUsername | UsersPermissionsUserConnectionEmail | UsersPermissionsUserConnectionProvider | UsersPermissionsUserConnectionConfirmed | UsersPermissionsUserConnectionBlocked | UsersPermissionsUserConnectionRole | UsersPermissionsUserConnectionEmpresa | UsersPermissionsUserConnectionManagerDe
+union Morph = UsersPermissionsMe | UsersPermissionsMeRole | Dia | createDiaPayload | updateDiaPayload | deleteDiaPayload | DiaConnection | DiaAggregator | DiaGroupBy | DiaConnection_id | DiaConnectionCreatedAt | DiaConnectionUpdatedAt | DiaConnectionFecha | DiaConnectionUser | DiaConnectionEquipo | DiaConnectionEstado | DiaConnectionTipo | Equipo | createEquipoPayload | updateEquipoPayload | deleteEquipoPayload | EquipoConnection | EquipoAggregator | EquipoGroupBy | EquipoConnection_id | EquipoConnectionCreatedAt | EquipoConnectionUpdatedAt | EquipoConnectionNombre | UploadFile | UploadFileConnection | UploadFileAggregator | UploadFileGroupBy | UploadFileConnection_id | UploadFileConnectionCreatedAt | UploadFileConnectionUpdatedAt | UploadFileConnectionName | UploadFileConnectionHash | UploadFileConnectionSha256 | UploadFileConnectionExt | UploadFileConnectionMime | UploadFileConnectionSize | UploadFileConnectionUrl | UploadFileConnectionProvider | UploadFileConnectionPublic_id | UsersPermissionsPermission | UsersPermissionsRole | createRolePayload | updateRolePayload | deleteRolePayload | UsersPermissionsRoleConnection | UsersPermissionsRoleAggregator | UsersPermissionsRoleGroupBy | UsersPermissionsRoleConnection_id | UsersPermissionsRoleConnectionName | UsersPermissionsRoleConnectionDescription | UsersPermissionsRoleConnectionType | UsersPermissionsUser | createUserPayload | updateUserPayload | deleteUserPayload | UsersPermissionsUserConnection | UsersPermissionsUserAggregator | UsersPermissionsUserGroupBy | UsersPermissionsUserConnection_id | UsersPermissionsUserConnectionUsername | UsersPermissionsUserConnectionEmail | UsersPermissionsUserConnectionProvider | UsersPermissionsUserConnectionConfirmed | UsersPermissionsUserConnectionBlocked | UsersPermissionsUserConnectionRole | UsersPermissionsUserConnectionEquipo | UsersPermissionsUserConnectionManager
 
 type Mutation {
   createDia(input: createDiaInput): createDiaPayload
   updateDia(input: updateDiaInput): updateDiaPayload
   deleteDia(input: deleteDiaInput): deleteDiaPayload
-  createEmpresa(input: createEmpresaInput): createEmpresaPayload
-  updateEmpresa(input: updateEmpresaInput): updateEmpresaPayload
-  deleteEmpresa(input: deleteEmpresaInput): deleteEmpresaPayload
+  createEquipo(input: createEquipoInput): createEquipoPayload
+  updateEquipo(input: updateEquipoInput): updateEquipoPayload
+  deleteEquipo(input: deleteEquipoInput): deleteEquipoPayload
 
   """Create a new role"""
   createRole(input: createRoleInput): createRolePayload
@@ -304,9 +315,9 @@ type Query {
   dia(id: ID!): Dia
   dias(sort: String, limit: Int, start: Int, where: JSON): [Dia]
   diasConnection(sort: String, limit: Int, start: Int, where: JSON): DiaConnection
-  empresa(id: ID!): Empresa
-  empresas(sort: String, limit: Int, start: Int, where: JSON): [Empresa]
-  empresasConnection(sort: String, limit: Int, start: Int, where: JSON): EmpresaConnection
+  equipo(id: ID!): Equipo
+  equipos(sort: String, limit: Int, start: Int, where: JSON): [Equipo]
+  equiposConnection(sort: String, limit: Int, start: Int, where: JSON): EquipoConnection
   files(sort: String, limit: Int, start: Int, where: JSON): [UploadFile]
   filesConnection(sort: String, limit: Int, start: Int, where: JSON): UploadFileConnection
   role(id: ID!): UsersPermissionsRole
@@ -339,13 +350,13 @@ type updateDiaPayload {
   dia: Dia
 }
 
-input updateEmpresaInput {
+input updateEquipoInput {
   where: InputID
-  data: editEmpresaInput
+  data: editEquipoInput
 }
 
-type updateEmpresaPayload {
-  empresa: Empresa
+type updateEquipoPayload {
+  equipo: Equipo
 }
 
 input updateRoleInput {
@@ -480,8 +491,8 @@ input UserInput {
   blocked: Boolean
   role: ID
   dias: [ID]
-  empresa: ID
-  managerDe: ID
+  equipo: ID
+  manager: Boolean
 }
 
 type UsersPermissionsMe {
@@ -564,8 +575,8 @@ type UsersPermissionsUser {
   confirmed: Boolean
   blocked: Boolean
   role: UsersPermissionsRole
-  empresa: Empresa
-  managerDe: Empresa
+  equipo: Equipo
+  manager: Boolean
   dias(sort: String, limit: Int, start: Int, where: JSON): [Dia]
 }
 
@@ -599,13 +610,13 @@ type UsersPermissionsUserConnectionEmail {
   connection: UsersPermissionsUserConnection
 }
 
-type UsersPermissionsUserConnectionEmpresa {
+type UsersPermissionsUserConnectionEquipo {
   key: ID
   connection: UsersPermissionsUserConnection
 }
 
-type UsersPermissionsUserConnectionManagerDe {
-  key: ID
+type UsersPermissionsUserConnectionManager {
+  key: Boolean
   connection: UsersPermissionsUserConnection
 }
 
@@ -632,6 +643,6 @@ type UsersPermissionsUserGroupBy {
   confirmed: [UsersPermissionsUserConnectionConfirmed]
   blocked: [UsersPermissionsUserConnectionBlocked]
   role: [UsersPermissionsUserConnectionRole]
-  empresa: [UsersPermissionsUserConnectionEmpresa]
-  managerDe: [UsersPermissionsUserConnectionManagerDe]
+  equipo: [UsersPermissionsUserConnectionEquipo]
+  manager: [UsersPermissionsUserConnectionManager]
 }

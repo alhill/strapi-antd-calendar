@@ -1,0 +1,26 @@
+{
+  "connection": "default",
+  "collectionName": "empresa",
+  "info": {
+    "name": "equipo",
+    "description": ""
+  },
+  "options": {
+    "timestamps": true
+  },
+  "attributes": {
+    "nombre": {
+      "default": "",
+      "type": "text"
+    },
+    "dias": {
+      "collection": "dia",
+      "via": "equipo"
+    },
+    "users": {
+      "collection": "user",
+      "via": "equipo",
+      "plugin": "users-permissions"
+    }
+  }
+}

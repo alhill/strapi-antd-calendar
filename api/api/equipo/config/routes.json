@@ -1,0 +1,52 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/equipos",
+      "handler": "Equipo.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/equipos/count",
+      "handler": "Equipo.count",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/equipos/:_id",
+      "handler": "Equipo.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/equipos",
+      "handler": "Equipo.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/equipos/:_id",
+      "handler": "Equipo.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/equipos/:_id",
+      "handler": "Equipo.destroy",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}
