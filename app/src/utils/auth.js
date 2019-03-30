@@ -1,5 +1,5 @@
 export function getToken(){
-    return JSON.parse(window.localStorage.getItem('jwt'))
+    return window.localStorage.getItem('jwt') !== "undefined" ? JSON.parse(window.localStorage.getItem('jwt')) : undefined
 }
 
 export function getHeaders(type = "application/json"){

@@ -6,6 +6,14 @@ type createDiaPayload {
   dia: Dia
 }
 
+input createDocumentoInput {
+  data: DocumentoInput
+}
+
+type createDocumentoPayload {
+  documento: Documento
+}
+
 input createEquipoInput {
   data: EquipoInput
 }
@@ -41,6 +49,14 @@ input deleteDiaInput {
 
 type deleteDiaPayload {
   dia: Dia
+}
+
+input deleteDocumentoInput {
+  where: InputID
+}
+
+type deleteDocumentoPayload {
+  documento: Documento
 }
 
 input deleteEquipoInput {
@@ -147,12 +163,73 @@ input DiaInput {
   tipo: ENUM_DIA_TIPO
 }
 
+type Documento {
+  _id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivo: UploadFile
+  user: UsersPermissionsUser
+}
+
+type DocumentoAggregator {
+  count: Int
+}
+
+type DocumentoConnection {
+  values: [Documento]
+  groupBy: DocumentoGroupBy
+  aggregate: DocumentoAggregator
+}
+
+type DocumentoConnection_id {
+  key: ID
+  connection: DocumentoConnection
+}
+
+type DocumentoConnectionArchivo {
+  key: ID
+  connection: DocumentoConnection
+}
+
+type DocumentoConnectionCreatedAt {
+  key: DateTime
+  connection: DocumentoConnection
+}
+
+type DocumentoConnectionUpdatedAt {
+  key: DateTime
+  connection: DocumentoConnection
+}
+
+type DocumentoConnectionUser {
+  key: ID
+  connection: DocumentoConnection
+}
+
+type DocumentoGroupBy {
+  _id: [DocumentoConnection_id]
+  createdAt: [DocumentoConnectionCreatedAt]
+  updatedAt: [DocumentoConnectionUpdatedAt]
+  archivo: [DocumentoConnectionArchivo]
+  user: [DocumentoConnectionUser]
+}
+
+input DocumentoInput {
+  archivo: ID
+  user: ID
+}
+
 input editDiaInput {
   fecha: DateTime
   user: ID
   equipo: ID
   estado: ENUM_DIA_ESTADO
   tipo: ENUM_DIA_TIPO
+}
+
+input editDocumentoInput {
+  archivo: ID
+  user: ID
 }
 
 input editEquipoInput {
@@ -194,6 +271,8 @@ input editUserInput {
   dias: [ID]
   equipo: ID
   manager: Boolean
+  documento: ID
+  avatar: ID
 }
 
 enum ENUM_DIA_ESTADO {
@@ -281,12 +360,15 @@ The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://
 """
 scalar JSON
 
-union Morph = UsersPermissionsMe | UsersPermissionsMeRole | Dia | createDiaPayload | updateDiaPayload | deleteDiaPayload | DiaConnection | DiaAggregator | DiaGroupBy | DiaConnection_id | DiaConnectionCreatedAt | DiaConnectionUpdatedAt | DiaConnectionFecha | DiaConnectionUser | DiaConnectionEquipo | DiaConnectionEstado | DiaConnectionTipo | Equipo | createEquipoPayload | updateEquipoPayload | deleteEquipoPayload | EquipoConnection | EquipoAggregator | EquipoGroupBy | EquipoConnection_id | EquipoConnectionCreatedAt | EquipoConnectionUpdatedAt | EquipoConnectionNombre | UploadFile | UploadFileConnection | UploadFileAggregator | UploadFileGroupBy | UploadFileConnection_id | UploadFileConnectionCreatedAt | UploadFileConnectionUpdatedAt | UploadFileConnectionName | UploadFileConnectionHash | UploadFileConnectionSha256 | UploadFileConnectionExt | UploadFileConnectionMime | UploadFileConnectionSize | UploadFileConnectionUrl | UploadFileConnectionProvider | UploadFileConnectionPublic_id | UsersPermissionsPermission | UsersPermissionsRole | createRolePayload | updateRolePayload | deleteRolePayload | UsersPermissionsRoleConnection | UsersPermissionsRoleAggregator | UsersPermissionsRoleGroupBy | UsersPermissionsRoleConnection_id | UsersPermissionsRoleConnectionName | UsersPermissionsRoleConnectionDescription | UsersPermissionsRoleConnectionType | UsersPermissionsUser | createUserPayload | updateUserPayload | deleteUserPayload | UsersPermissionsUserConnection | UsersPermissionsUserAggregator | UsersPermissionsUserGroupBy | UsersPermissionsUserConnection_id | UsersPermissionsUserConnectionUsername | UsersPermissionsUserConnectionEmail | UsersPermissionsUserConnectionProvider | UsersPermissionsUserConnectionConfirmed | UsersPermissionsUserConnectionBlocked | UsersPermissionsUserConnectionRole | UsersPermissionsUserConnectionEquipo | UsersPermissionsUserConnectionManager
+union Morph = UsersPermissionsMe | UsersPermissionsMeRole | Dia | createDiaPayload | updateDiaPayload | deleteDiaPayload | DiaConnection | DiaAggregator | DiaGroupBy | DiaConnection_id | DiaConnectionCreatedAt | DiaConnectionUpdatedAt | DiaConnectionFecha | DiaConnectionUser | DiaConnectionEquipo | DiaConnectionEstado | DiaConnectionTipo | Documento | createDocumentoPayload | updateDocumentoPayload | deleteDocumentoPayload | DocumentoConnection | DocumentoAggregator | DocumentoGroupBy | DocumentoConnection_id | DocumentoConnectionCreatedAt | DocumentoConnectionUpdatedAt | DocumentoConnectionArchivo | DocumentoConnectionUser | Equipo | createEquipoPayload | updateEquipoPayload | deleteEquipoPayload | EquipoConnection | EquipoAggregator | EquipoGroupBy | EquipoConnection_id | EquipoConnectionCreatedAt | EquipoConnectionUpdatedAt | EquipoConnectionNombre | UploadFile | UploadFileConnection | UploadFileAggregator | UploadFileGroupBy | UploadFileConnection_id | UploadFileConnectionCreatedAt | UploadFileConnectionUpdatedAt | UploadFileConnectionName | UploadFileConnectionHash | UploadFileConnectionSha256 | UploadFileConnectionExt | UploadFileConnectionMime | UploadFileConnectionSize | UploadFileConnectionUrl | UploadFileConnectionProvider | UploadFileConnectionPublic_id | UsersPermissionsPermission | UsersPermissionsRole | createRolePayload | updateRolePayload | deleteRolePayload | UsersPermissionsRoleConnection | UsersPermissionsRoleAggregator | UsersPermissionsRoleGroupBy | UsersPermissionsRoleConnection_id | UsersPermissionsRoleConnectionName | UsersPermissionsRoleConnectionDescription | UsersPermissionsRoleConnectionType | UsersPermissionsUser | createUserPayload | updateUserPayload | deleteUserPayload | UsersPermissionsUserConnection | UsersPermissionsUserAggregator | UsersPermissionsUserGroupBy | UsersPermissionsUserConnection_id | UsersPermissionsUserConnectionUsername | UsersPermissionsUserConnectionEmail | UsersPermissionsUserConnectionProvider | UsersPermissionsUserConnectionConfirmed | UsersPermissionsUserConnectionBlocked | UsersPermissionsUserConnectionRole | UsersPermissionsUserConnectionEquipo | UsersPermissionsUserConnectionManager | UsersPermissionsUserConnectionDocumento | UsersPermissionsUserConnectionAvatar
 
 type Mutation {
   createDia(input: createDiaInput): createDiaPayload
   updateDia(input: updateDiaInput): updateDiaPayload
   deleteDia(input: deleteDiaInput): deleteDiaPayload
+  createDocumento(input: createDocumentoInput): createDocumentoPayload
+  updateDocumento(input: updateDocumentoInput): updateDocumentoPayload
+  deleteDocumento(input: deleteDocumentoInput): deleteDocumentoPayload
   createEquipo(input: createEquipoInput): createEquipoPayload
   updateEquipo(input: updateEquipoInput): updateEquipoPayload
   deleteEquipo(input: deleteEquipoInput): deleteEquipoPayload
@@ -315,6 +397,9 @@ type Query {
   dia(id: ID!): Dia
   dias(sort: String, limit: Int, start: Int, where: JSON): [Dia]
   diasConnection(sort: String, limit: Int, start: Int, where: JSON): DiaConnection
+  documento(id: ID!): Documento
+  documentos(sort: String, limit: Int, start: Int, where: JSON): [Documento]
+  documentosConnection(sort: String, limit: Int, start: Int, where: JSON): DocumentoConnection
   equipo(id: ID!): Equipo
   equipos(sort: String, limit: Int, start: Int, where: JSON): [Equipo]
   equiposConnection(sort: String, limit: Int, start: Int, where: JSON): EquipoConnection
@@ -348,6 +433,15 @@ input updateDiaInput {
 
 type updateDiaPayload {
   dia: Dia
+}
+
+input updateDocumentoInput {
+  where: InputID
+  data: editDocumentoInput
+}
+
+type updateDocumentoPayload {
+  documento: Documento
 }
 
 input updateEquipoInput {
@@ -493,6 +587,8 @@ input UserInput {
   dias: [ID]
   equipo: ID
   manager: Boolean
+  documento: ID
+  avatar: ID
 }
 
 type UsersPermissionsMe {
@@ -577,6 +673,8 @@ type UsersPermissionsUser {
   role: UsersPermissionsRole
   equipo: Equipo
   manager: Boolean
+  documento: Documento
+  avatar: UploadFile
   dias(sort: String, limit: Int, start: Int, where: JSON): [Dia]
 }
 
@@ -595,6 +693,11 @@ type UsersPermissionsUserConnection_id {
   connection: UsersPermissionsUserConnection
 }
 
+type UsersPermissionsUserConnectionAvatar {
+  key: ID
+  connection: UsersPermissionsUserConnection
+}
+
 type UsersPermissionsUserConnectionBlocked {
   key: Boolean
   connection: UsersPermissionsUserConnection
@@ -602,6 +705,11 @@ type UsersPermissionsUserConnectionBlocked {
 
 type UsersPermissionsUserConnectionConfirmed {
   key: Boolean
+  connection: UsersPermissionsUserConnection
+}
+
+type UsersPermissionsUserConnectionDocumento {
+  key: ID
   connection: UsersPermissionsUserConnection
 }
 
@@ -645,4 +753,6 @@ type UsersPermissionsUserGroupBy {
   role: [UsersPermissionsUserConnectionRole]
   equipo: [UsersPermissionsUserConnectionEquipo]
   manager: [UsersPermissionsUserConnectionManager]
+  documento: [UsersPermissionsUserConnectionDocumento]
+  avatar: [UsersPermissionsUserConnectionAvatar]
 }

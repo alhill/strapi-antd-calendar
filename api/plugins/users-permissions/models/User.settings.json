@@ -60,6 +60,16 @@
     "manager": {
       "default": false,
       "type": "boolean"
+    },
+    "documento": {
+      "model": "documento",
+      "via": "user"
+    },
+    "avatar": {
+      "model": "file",
+      "via": "related",
+      "plugin": "upload",
+      "required": false
     }
   },
   "collectionName": "users-permissions_user"

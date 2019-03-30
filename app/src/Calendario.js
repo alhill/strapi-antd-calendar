@@ -1,11 +1,12 @@
 import React, { Component } from 'react'
-import { Menu, Layout, Typography, Calendar, Modal, message, Avatar } from 'antd'
+import { Layout, Typography, Calendar, Modal, message, Avatar } from 'antd'
 import moment from 'moment';
 import { getHeaders, getUserInfo } from './utils/auth';
-const { Header, Footer, Sider, Content } = Layout;
+import Frame from './Frame';
 const { Title, Paragraph } = Typography;
 
-class Home extends Component{
+
+class Calendario extends Component{
     constructor(props){
         super(props)
         this.state = {
@@ -68,33 +69,15 @@ class Home extends Component{
     render(){
         return(
             <Layout style={{height:"100vh"}}>
-                <Header>
-                        <Title style={{ color: "#f0f0f0", margin: "0.25em" }}>Blacknosaur Calendar</Title>
-                </Header>
-                <Layout>
-                    <Sider>
-                        <Menu theme="dark" mode="vertical-left">
-                            <Menu.Item>Blacknosaur Calendar Option 1</Menu.Item>
-                            <Menu.Item>Blacknosaur Calendar Option 2</Menu.Item>
-                            <Menu.Item>Blacknosaur Calendar Option 3</Menu.Item>
-                            <Menu.Item>Blacknosaur Calendar Option 4</Menu.Item>
-                        </Menu>
-                    </Sider>
-                    <Layout>
-                        <Content style={{ padding: "2em" }}>
-                            <Calendar
-                                onSelect={evt => this.setState({
-                                    dia: evt,
-                                    modalPedirDia: true
-                                })} 
-                                dateCellRender={this.dateCellRender}
-                            />
-                        </Content>
-                        <Footer>
-                            <Paragraph>&reg;2019 Blacknosaur & AlHill Development</Paragraph>
-                        </Footer>
-                    </Layout>
-                </Layout>
+                <Frame>
+                    <Calendar
+                        onSelect={evt => this.setState({
+                            dia: evt,
+                            modalPedirDia: true
+                        })} 
+                        dateCellRender={this.dateCellRender}
+                    />
+                </Frame>
                 <Modal
                     title="Solicitar día libre"
                     visible={this.state.modalPedirDia}
@@ -108,4 +91,4 @@ class Home extends Component{
     }
 }
 
-export default Home
+export default Calendario

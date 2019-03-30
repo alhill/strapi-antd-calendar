@@ -72,9 +72,11 @@ class NuevoUsuario extends Component{
                             confirmed: true,
                             manager: true
                         })
+                    }).then(() => {
+                        this.props.history.push("/")
                     })
-                }).catch(err => console.log(err))
-            }).catch(err => console.log(err))
+                }).catch(err => { console.log(err); message.error("Se ha producido un error al asignar el usuario al equipo recien creado") })
+            }).catch(err => { console.log(err); message.error("Se ha producido un error al crear el equipo") })
         })
     }   
 

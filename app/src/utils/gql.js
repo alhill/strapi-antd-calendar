@@ -1,5 +1,4 @@
-//process.env.API_URL
-export default function gql(query, variables = {}, baseURL = "http://localhost:1337"){
+export default function gql(query, variables = {}, baseURL = process.env.REACT_APP_API_URL){
     if( query === undefined ){ console.log("El parámetro 'query' de la funcion gql está vacío") }
     const queryReplace = query
                     .replace(/\n/gi,   "%0A")
