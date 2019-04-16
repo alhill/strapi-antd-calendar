@@ -70,6 +70,10 @@
       "via": "related",
       "plugin": "upload",
       "required": false
+    },
+    "registros": {
+      "collection": "registro",
+      "via": "user"
     }
   },
   "collectionName": "users-permissions_user"

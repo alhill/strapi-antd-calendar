@@ -31,12 +31,14 @@ class NuevoUsuario extends Component{
             fetch(gql(query, { nombre: values.unirse }), { headers: getHeaders() })
                 .then(response => {
                     response.json().then(data => {
+                        console.log(data)
                         if(data.data.equipos[0]){
                             fetch("http://localhost:1337/users/" + getUserInfo()._id, {
                                 method: "PUT",
                                 headers: getHeaders(),
                                 body: JSON.stringify({
-                                    equipo: data.data.equipos[0]._id
+                                    equipo: data.data.equipos[0]._id,
+                                    confirmed: false
                                 })
                             }).then(data => {
                                 console.log(data)

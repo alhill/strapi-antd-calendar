@@ -1,39 +1,136 @@
 import React, { Component } from 'react'
-import { Layout, Typography, Calendar, Modal, message, Avatar } from 'antd'
+import { Layout, Typography, Calendar, Modal, message, Avatar, Button, Popover, Radio, Row, Table, Popconfirm, Tag } from 'antd'
 import moment from 'moment';
 import { getHeaders, getUserInfo } from './utils/auth';
+import gql from './utils/gql';
+import request from './utils/request';
 import Frame from './Frame';
+import PrivateComponent from './PrivateComponent';
 const { Title, Paragraph } = Typography;
 
-
-class Calendario extends Component{
-    constructor(props){
-        super(props)
-        this.state = {
-            modalPedirDia: false,
-            dias: [{ fecha: "" }]
+const query = `{
+    dias(where: { equipo: "${getUserInfo().equipo }" }){
+        _id
+        fecha
+        tipo
+        aprobado
+        user{
+            _id
+            username
+            avatar{
+                url
+            }
         }
     }
+}`
+
+class Calendario extends Component{
+    state = {
+        modalPedirDia: false,
+        dias: [],
+        diasFilter: [],
+        diasPorAprobar: [],
+        sel1: "libres",
+        sel2: "global"
+    }
+
     componentDidMount(){
-        console.log(getUserInfo())
-        fetch("http://localhost:1337/dias", {
+        
+        const columns = [{
+            title: 'Nombre de usuario',
+            key: 'user',
+            render: r => r.user.username
+        }, {
+            title: 'Tipo',
+            dataIndex: 'tipo',
+            key: 'tipo'
+        }, {
+            title: 'Fecha',
+            key: 'fecha',
+            render: fecha => moment(fecha).format("YYYY-MM-DD")
+        }, {
+            title: 'Acción',
+            key: 'action',
+            render: (text, record) => (
+              <span>
+                <Popconfirm title={`¿Estás seguro de que deseas aceptar la solicitud de día ${record.tipo} para el día ${moment(record.fecha).format("YYYY-MM-DD")} a ${record.user.username}?`} onConfirm={evt => this.responderSolicitud(record, true)}>
+                    <Tag color="green" key={`${record._id}_aceptar`}>Aprobar</Tag>
+                </Popconfirm>
+                <Popconfirm title={`¿Estás seguro de que deseas denegar la solicitud de día ${record.tipo} para el día ${moment(record.fecha).format("YYYY-MM-DD")} a ${record.user.username}?`} onConfirm={evt => this.responderSolicitud(record, false)}>
+                    <Tag color="volcano" key={`${record._id}_denegar`}>Denegar</Tag>
+                </Popconfirm>
+              </span>
+            ),
+        }]
+
+        this.setState({ columns })
+        this.fetchDias()
+    }
+
+    componentDidUpdate(prevProps, prevState){
+        if(prevState.sel1 !== this.state.sel1 || prevState.sel2 !== this.state.sel2){
+            this.setState({ diasFilter: this.filtrarDias(this.state.dias) })
+        }
+    }
+
+    fetchDias = () => {         
+        fetch(gql(query), {
             method: "GET",
             headers: getHeaders()
         }).then(resp => {
-            resp.json().then(dias => {
-                this.setState({ dias })
+            console.log(resp)
+            resp.json().then(data => {
+                this.setState({ dias: data.data.dias, diasFilter: this.filtrarDias(data.data.dias), diasPorAprobar: data.data.dias.filter(d => !d.aprobado).map(d => ({...d, key: d._id})) })
             }).catch(err => console.log(err))
         }).catch(err => console.log(err))
     }
    
-    getListData = value => {
-        let listData;
-        const arrDias = this.state.dias.map(dia => {
-            return moment(dia.fecha).format("YYYYMMDD")
-        })
-        if( arrDias.includes(moment(value).format("YYYYMMDD"))){
-            listData = [{ user: "Akukule", fecha: moment(value)}]
+    filtrarDias = (dias) => {
+        const primerFiltro = this.state.sel1 === "libres" ?
+        dias.filter(d => d.tipo === "libre") :
+        dias.filter(d => d.tipo === "remoto")
+
+        const diasFilter = this.state.sel2 === "aprobados" ?  primerFiltro.filter(d => ( d.aprobado && d.user._id === getUserInfo()._id )) : (
+                           this.state.sel2 === "pendientes" ? primerFiltro.filter(d => ( !d.aprobado && d.user._id === getUserInfo()._id )) :
+                                                              primerFiltro.filter(d => d.aprobado))
+                                                              
+        return diasFilter
+    }
+
+    responderSolicitud = (dia, bool) => {
+        if(bool){ //Aceptar
+            request("/dias/" + dia._id, {
+                method: "PUT",
+                body: { aprobado: true }
+            }).then(resp => {
+                message.success(`Se ha aprobado la solicitud de ${dia.user.username} de día ${dia.tipo} el día ${moment(dia.fecha).format("YYYY-MM-DD")}`)
+                this.fetchDias()
+            }).catch(err => {
+                console.error(err)
+                message.error(`Se ha producido un error durante la aprobación del día ${dia.tipo} solicitado`)                    
+            })
         }
+        else{ //Denegar
+            request("/dias/" + dia._id, {
+                method: "DELETE",
+            }).then(resp => {
+                message.info("Se ha denegado la solicitud de día " + dia.tipo)
+                this.fetchDias()               
+            }).catch(err => {
+                message.error(`Se ha producido un error durante la denegación del día ${dia.tipo} solicitado`)       
+                console.error(err)
+            })
+        }
+    }
+
+    getListData = value => {
+        const listData = this.state.diasFilter
+            .filter(d => moment(d.fecha).format("YYYYMMDD") === moment(value).format("YYYYMMDD"))
+            .map(d => ({
+                user: d.user.username,
+                fecha: moment(d.fecha),
+                avatar: d.user.avatar && (process.env.REACT_APP_API_URL + d.user.avatar.url)
+            }))
         return listData || [];
     }
 
@@ -43,23 +140,27 @@ class Calendario extends Component{
             <ul className="events">
             {
                 listData.map(item => (
-                    <Avatar key={item.fecha}>{ item.user[0] }</Avatar>
+                    <Popover key={item.fecha} content={<span>{item.user}</span>}>
+                        <Avatar src={item.avatar}>{ item.user[0].toUpperCase() }</Avatar>
+                    </Popover>
                 ))
             }
             </ul>
         );
     }
 
-    solicitarDia = fecha => {
+    solicitarDia = (fecha, tipo) => {
+        const { _id, equipo } = getUserInfo()
         fetch("http://localhost:1337/dias", {
             method: "POST",
             headers: getHeaders(),
             body: JSON.stringify({
-                fecha
+                fecha, tipo, user: _id, equipo
             })
         }).then(resp => {
             resp.json().then(dia => {
-                message.info(`Has solicitado como día libre el ${moment(this.state.dia).format("DD/MM/YYYY")}. Tu solicitud está pendiente de aprobación`); 
+                message.info(`Has solicitado como día ${tipo} el ${moment(this.state.dia).format("DD/MM/YYYY")}. Tu solicitud está pendiente de aprobación`); 
+                this.fetchDias()
                 this.setState({ modalPedirDia: false, dias: [...this.state.dias, dia] })
             }).catch(err => console.log(err))
         }).catch(err => console.log(err))
@@ -70,6 +171,17 @@ class Calendario extends Component{
         return(
             <Layout style={{height:"100vh"}}>
                 <Frame>
+                    <Row style={{ justifyContent: "space-around", display: "flex"}}>
+                        <Radio.Group defaultValue={this.state.sel1} buttonStyle="solid">
+                            <Radio.Button onClick={() => this.setState({ sel1: "libres" }) } value="libres">Libres</Radio.Button>
+                            <Radio.Button onClick={() => this.setState({ sel1: "remotos" }) } value="remotos">Remotos</Radio.Button>
+                        </Radio.Group>
+                        <Radio.Group defaultValue={this.state.sel2} buttonStyle="solid">
+                            <Radio.Button onClick={() => this.setState({ sel2: "global" }) } value="global">Global aprobados</Radio.Button>
+                            <Radio.Button onClick={() => this.setState({ sel2: "aprobados" }) } value="aprobados">Mis días aprobados</Radio.Button>
+                            <Radio.Button onClick={() => this.setState({ sel2: "pendientes" }) } value="pendientes">Mis días pendientes de aprobación</Radio.Button>
+                        </Radio.Group>
+                    </Row>
                     <Calendar
                         onSelect={evt => this.setState({
                             dia: evt,
@@ -77,14 +189,22 @@ class Calendario extends Component{
                         })} 
                         dateCellRender={this.dateCellRender}
                     />
+                    <PrivateComponent>
+                        <h1>Días pendientes de revisión</h1>
+                        <Table dataSource={this.state.diasPorAprobar} columns={this.state.columns || []} />
+                    </PrivateComponent>
                 </Frame>
                 <Modal
-                    title="Solicitar día libre"
                     visible={this.state.modalPedirDia}
-                    onOk={() => this.solicitarDia( this.state.dia )}
                     onCancel={() => this.setState({ modalPedirDia: false })}
+                    footer={[
+                        <Button key="libre" onClick={() => this.solicitarDia( this.state.dia, "libre")}>Día libre</Button>,
+                        <Button key="remoto" type="primary" onClick={() => this.solicitarDia( this.state.dia, "remoto")}>Día remoto</Button>
+                        <Button key="remoto" type="primary" onClick={() => this.solicitarDia( this.state.dia, "remoto")}>Día remoto</Button>
+
+                      ]}
                 >
-                    <p>¿Quieres solicitar como día libre el { moment(this.state.dia).format("DD/MM/YYYY") }?</p>
+                    <p>Solicitar el día { moment(this.state.dia).format("DD/MM/YYYY") } como... </p>
                 </Modal>
             </Layout>
         )

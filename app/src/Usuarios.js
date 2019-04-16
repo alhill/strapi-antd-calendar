@@ -1,57 +1,94 @@
 import React, { Component } from 'react'
-import { Layout, Table } from 'antd'
+import { Layout, Table, Tag, Popconfirm, message, Icon } from 'antd'
 import Frame from './Frame';
 import request from './utils/request';
 
 
 class Usuarios extends Component{
 
-    state = {}
+    state = {
+        columns: [],
+        extraColumnsA: [],
+        extraColumnsB: []
+    }
 
     componentDidMount() {
+        const columns = [{
+            title: 'Nombre de usuario',
+            dataIndex: 'username',
+            key: 'username',
+        }, {
+            title: 'Email',
+            dataIndex: 'email',
+            key: 'email',
+        }]
+
+        const extraColumnsA = [{
+            title: 'Manager',
+            dataIndex: 'manager',
+            render: bool => bool ? <Icon type="check-circle" theme="twoTone" twoToneColor="#eb2f96" twoToneColor="#52c41a"/> : <Icon type="close-circle" theme="twoTone" twoToneColor="#eb2f96"/>
+        }]
+        const extraColumnsB = [{
+            title: 'Acción',
+            key: 'action',
+            render: (text, record) => (
+              <span>
+                <Popconfirm title={`¿Estás seguro de que deseas aceptar en ${record.equipo.nombre} a ${record.email}?`} onConfirm={evt => this.responderSolicitud(record, true)}>
+                    <Tag color="green" key={`${record._id}_aceptar`}>Aceptar</Tag>
+                </Popconfirm>
+                <Popconfirm title={`¿Estás seguro de que deseas denegar la solicitud de ${record.email} para entrar en ${record.equipo.nombre}?`} onConfirm={evt => this.responderSolicitud(record, false)}>
+                    <Tag color="volcano" key={`${record._id}_denegar`}>Denegar</Tag>
+                </Popconfirm>
+              </span>
+            ),
+        }]
+        this.setState({ columns, extraColumnsA, extraColumnsB })
         this.fetchUsers()
     }
 
     fetchUsers = async () => {
-
         const users = await request("/users")
-        console.log(users)
-
-        const dataSource = [{
-            key: '1',
-            name: 'Mike',
-            age: 32,
-            address: '10 Downing Street'
-        }, {
-            key: '2',
-            name: 'John',
-            age: 42,
-            address: '10 Downing Street'
-        }];
-
-        const columns = [{
-            title: 'Name',
-            dataIndex: 'name',
-            key: 'name',
-        }, {
-            title: 'Age',
-            dataIndex: 'age',
-            key: 'age',
-        }, {
-            title: 'Address',
-            dataIndex: 'address',
-            key: 'address',
-        }];
-
-        this.setState({ dataSource, columns })
+        const activos = users.filter(u => u.confirmed).map(u => ({...u, key: u._id}))
+        const pendientes = users.filter(u => !u.confirmed).map(u => ({...u, key: u._id}))
+        this.setState({ activos, pendientes })
     }
+
+    responderSolicitud = (usuario, bool) => {
+        if(bool){ //Aceptar
+            request("/users/" + usuario._id, {
+                method: "PUT",
+                body: { confirmed: true }
+            }).then(resp => {
+                message.success(`¡${usuario.email} ahora forma parte del equipo ${usuario.equipo.nombre}!`)
+                this.fetchUsers()
+            }).catch(err => {
+                console.error(err)
+                message.error("Se ha producido un error durante la confirmación de la solicitud del usuario")                    
+            })
+        }
+        else{ //Denegar
+            request("/users/" + usuario._id, {
+                method: "DELETE",
+            }).then(resp => {
+                message.info("La solicitud se ha denegado correctamente")
+                this.fetchUsers()               
+            }).catch(err => {
+                message.error("Se ha producido un error durante la denegación de la solicitud del usuario")       
+                console.error(err)
+            })
+        }
+    }
+    
     render(){
-        const { dataSource, columns } = this.state
+        const { activos, pendientes, columns, extraColumnsA, extraColumnsB } = this.state
+        console.log(columns)
         return(
             <Layout style={{height:"100vh"}}>
                 <Frame>
-                    <h1>Usuarios</h1>
-                    <Table dataSource={dataSource} columns={columns} />
+                    <h1>Usuarios activos</h1>
+                    <Table dataSource={activos} columns={[...columns, ...extraColumnsA]} />
+                    <h1>Usuarios pendientes de aprobación</h1>
+                    <Table dataSource={pendientes} columns={[...columns, ...extraColumnsB]} />
                 </Frame>
             </Layout>
         )

@@ -8,6 +8,8 @@ import { LocaleProvider } from 'antd';
 import esES from 'antd/lib/locale-provider/es_ES';
 import moment from 'moment';
 import 'moment/locale/es';
+import { SocketProvider } from 'socket.io-react';
+import io from 'socket.io-client';
 import { PrivateRoute } from './PrivateRoute';
 import Home from "./Home"
 import Calendario from "./Calendario"
@@ -18,24 +20,28 @@ import Analitica from './Analitica';
 import Configuracion from './Configuracion';
 moment.locale('es');
 
+const socket = io.connect(process.env.REACT_APP_API_URL);
+
 class App extends Component {
   render() {
     return (
       <LocaleProvider locale={esES}>
-        <BrowserRouter>
-          <Switch>
-            <Route exact path="/login" component={Login} />
-            <Route exact path="/register" component={Register} />
-            <PrivateRoute exact path="/calendario" component={Calendario} />
-            <PrivateRoute exact path="/documentos" component={Documentos} />
-            <PrivateRoute exact path="/usuarios" component={Usuarios} />
-            <PrivateRoute exact path="/analitica" component={Analitica} />
-            <PrivateRoute exact path="/configuracion" component={Configuracion} />
-            <PrivateRoute exact path="/nuevousuario" component={NuevoUsuario} />
-            <PrivateRoute exact path="/" component={Home} />
-            <Route path="" component={FourOhFour} />
-          </Switch>
-        </BrowserRouter>
+        <SocketProvider socket={socket}>
+          <BrowserRouter>
+            <Switch>
+              <Route exact path="/login" component={Login} />
+              <Route exact path="/register" component={Register} />
+              <PrivateRoute exact path="/calendario" component={Calendario} />
+              <PrivateRoute exact path="/documentos" component={Documentos} />
+              <PrivateRoute onlyManager={true} exact path="/usuarios" component={Usuarios} />
+              <PrivateRoute onlyManager={true} exact path="/analitica" component={Analitica} />
+              <PrivateRoute onlyManager={true} exact path="/configuracion" component={Configuracion} />
+              <PrivateRoute exact path="/nuevousuario" component={NuevoUsuario} />
+              <PrivateRoute exact path="/" component={Home} />
+              <Route path="" component={FourOhFour} />
+            </Switch>
+          </BrowserRouter>
+        </SocketProvider>
       </LocaleProvider>
     );
   }

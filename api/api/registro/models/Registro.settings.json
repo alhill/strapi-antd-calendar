@@ -1,0 +1,22 @@
+{
+  "connection": "default",
+  "collectionName": "",
+  "info": {
+    "name": "registro",
+    "description": ""
+  },
+  "options": {
+    "timestamps": true
+  },
+  "attributes": {
+    "hora": {
+      "default": "",
+      "type": "date"
+    },
+    "user": {
+      "model": "user",
+      "via": "registros",
+      "plugin": "users-permissions"
+    }
+  }
+}

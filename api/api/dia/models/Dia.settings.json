@@ -20,17 +20,7 @@
     },
     "equipo": {
       "model": "equipo",
-      "via": "dias",
-      "columnName": ""
-    },
-    "estado": {
-      "default": "",
-      "type": "enumeration",
-      "enum": [
-        "",
-        "pedido",
-        "confirmado"
-      ]
+      "via": "dias"
     },
     "tipo": {
       "default": "",
@@ -41,6 +31,10 @@
         "remoto",
         "festivo"
       ]
+    },
+    "aprobado": {
+      "default": false,
+      "type": "boolean"
     }
   }
 }

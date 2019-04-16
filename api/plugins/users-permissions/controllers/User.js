@@ -147,7 +147,13 @@ module.exports = {
       }
 
       const data = await strapi.plugins['users-permissions'].services.user.edit(ctx.params, ctx.request.body) ;
-
+      if(ctx.request.body.equipo && ctx.request.body.confirmed === false){
+        strapi.emitToAllUsers({
+          equipo: ctx.request.body.equipo,
+          user: data._id
+        });
+        strapi.log.info("holi")
+      }
       // Send 200 `ok`
       ctx.send(data);
     } catch(error) {

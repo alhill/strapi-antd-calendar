@@ -30,7 +30,7 @@ class Register extends Component{
                     if(this.validateEmail(values.email)){
                         fetch("http://localhost:1337/auth/local/register", {
                             method: "POST",
-                            headers: getHeaders(),
+                            headers: getHeaders(true),
                             body: JSON.stringify({ 
                                 username: values.userName, password: values.password, email: values.email, confirmed: false 
                             })

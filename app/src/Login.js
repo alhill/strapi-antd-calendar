@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Form, Icon, Input, Button, Layout, Card, Row, Col } from 'antd';
+import { Form, Icon, Input, Button, Layout, Card, Row, Col, message } from 'antd';
 import { saveAuthData } from './utils/auth';
 
 function hasErrors(fieldsError) {
@@ -32,8 +32,12 @@ class Login extends Component{
                 body: JSON.stringify({ identifier: values.userName, password: values.password })
             }).then(resp => {
                 resp.json().then(data => {
+                    console.log(data.user)
                     if(data.statusCode === 400){
                         this.setState({ error: true })
+                    }
+                    else if(!data.user.confirmed){
+                        message.info("Tu acceso al equipo de trabajo todavía no ha sido aprobado")
                     }
                     else{
                         this.setState({ error: false })

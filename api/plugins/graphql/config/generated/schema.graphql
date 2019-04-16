@@ -22,6 +22,14 @@ type createEquipoPayload {
   equipo: Equipo
 }
 
+input createRegistroInput {
+  data: RegistroInput
+}
+
+type createRegistroPayload {
+  registro: Registro
+}
+
 input createRoleInput {
   data: RoleInput
 }
@@ -67,6 +75,14 @@ type deleteEquipoPayload {
   equipo: Equipo
 }
 
+input deleteRegistroInput {
+  where: InputID
+}
+
+type deleteRegistroPayload {
+  registro: Registro
+}
+
 input deleteRoleInput {
   where: InputID
 }
@@ -90,8 +106,8 @@ type Dia {
   fecha: DateTime
   user: UsersPermissionsUser
   equipo: Equipo
-  estado: ENUM_DIA_ESTADO
   tipo: ENUM_DIA_TIPO
+  aprobado: Boolean
 }
 
 type DiaAggregator {
@@ -109,6 +125,11 @@ type DiaConnection_id {
   connection: DiaConnection
 }
 
+type DiaConnectionAprobado {
+  key: Boolean
+  connection: DiaConnection
+}
+
 type DiaConnectionCreatedAt {
   key: DateTime
   connection: DiaConnection
@@ -116,11 +137,6 @@ type DiaConnectionCreatedAt {
 
 type DiaConnectionEquipo {
   key: ID
-  connection: DiaConnection
-}
-
-type DiaConnectionEstado {
-  key: String
   connection: DiaConnection
 }
 
@@ -151,16 +167,16 @@ type DiaGroupBy {
   fecha: [DiaConnectionFecha]
   user: [DiaConnectionUser]
   equipo: [DiaConnectionEquipo]
-  estado: [DiaConnectionEstado]
   tipo: [DiaConnectionTipo]
+  aprobado: [DiaConnectionAprobado]
 }
 
 input DiaInput {
   fecha: DateTime
   user: ID
   equipo: ID
-  estado: ENUM_DIA_ESTADO
   tipo: ENUM_DIA_TIPO
+  aprobado: Boolean
 }
 
 type Documento {
@@ -223,8 +239,8 @@ input editDiaInput {
   fecha: DateTime
   user: ID
   equipo: ID
-  estado: ENUM_DIA_ESTADO
   tipo: ENUM_DIA_TIPO
+  aprobado: Boolean
 }
 
 input editDocumentoInput {
@@ -251,6 +267,11 @@ input editFileInput {
   related: [ID]
 }
 
+input editRegistroInput {
+  hora: DateTime
+  user: ID
+}
+
 input editRoleInput {
   name: String
   description: String
@@ -273,11 +294,7 @@ input editUserInput {
   manager: Boolean
   documento: ID
   avatar: ID
-}
-
-enum ENUM_DIA_ESTADO {
-  pedido
-  confirmado
+  registros: [ID]
 }
 
 enum ENUM_DIA_TIPO {
@@ -360,7 +377,7 @@ The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://
 """
 scalar JSON
 
-union Morph = UsersPermissionsMe | UsersPermissionsMeRole | Dia | createDiaPayload | updateDiaPayload | deleteDiaPayload | DiaConnection | DiaAggregator | DiaGroupBy | DiaConnection_id | DiaConnectionCreatedAt | DiaConnectionUpdatedAt | DiaConnectionFecha | DiaConnectionUser | DiaConnectionEquipo | DiaConnectionEstado | DiaConnectionTipo | Documento | createDocumentoPayload | updateDocumentoPayload | deleteDocumentoPayload | DocumentoConnection | DocumentoAggregator | DocumentoGroupBy | DocumentoConnection_id | DocumentoConnectionCreatedAt | DocumentoConnectionUpdatedAt | DocumentoConnectionArchivo | DocumentoConnectionUser | Equipo | createEquipoPayload | updateEquipoPayload | deleteEquipoPayload | EquipoConnection | EquipoAggregator | EquipoGroupBy | EquipoConnection_id | EquipoConnectionCreatedAt | EquipoConnectionUpdatedAt | EquipoConnectionNombre | UploadFile | UploadFileConnection | UploadFileAggregator | UploadFileGroupBy | UploadFileConnection_id | UploadFileConnectionCreatedAt | UploadFileConnectionUpdatedAt | UploadFileConnectionName | UploadFileConnectionHash | UploadFileConnectionSha256 | UploadFileConnectionExt | UploadFileConnectionMime | UploadFileConnectionSize | UploadFileConnectionUrl | UploadFileConnectionProvider | UploadFileConnectionPublic_id | UsersPermissionsPermission | UsersPermissionsRole | createRolePayload | updateRolePayload | deleteRolePayload | UsersPermissionsRoleConnection | UsersPermissionsRoleAggregator | UsersPermissionsRoleGroupBy | UsersPermissionsRoleConnection_id | UsersPermissionsRoleConnectionName | UsersPermissionsRoleConnectionDescription | UsersPermissionsRoleConnectionType | UsersPermissionsUser | createUserPayload | updateUserPayload | deleteUserPayload | UsersPermissionsUserConnection | UsersPermissionsUserAggregator | UsersPermissionsUserGroupBy | UsersPermissionsUserConnection_id | UsersPermissionsUserConnectionUsername | UsersPermissionsUserConnectionEmail | UsersPermissionsUserConnectionProvider | UsersPermissionsUserConnectionConfirmed | UsersPermissionsUserConnectionBlocked | UsersPermissionsUserConnectionRole | UsersPermissionsUserConnectionEquipo | UsersPermissionsUserConnectionManager | UsersPermissionsUserConnectionDocumento | UsersPermissionsUserConnectionAvatar
+union Morph = UsersPermissionsMe | UsersPermissionsMeRole | Dia | createDiaPayload | updateDiaPayload | deleteDiaPayload | DiaConnection | DiaAggregator | DiaGroupBy | DiaConnection_id | DiaConnectionCreatedAt | DiaConnectionUpdatedAt | DiaConnectionFecha | DiaConnectionUser | DiaConnectionEquipo | DiaConnectionTipo | DiaConnectionAprobado | Documento | createDocumentoPayload | updateDocumentoPayload | deleteDocumentoPayload | DocumentoConnection | DocumentoAggregator | DocumentoGroupBy | DocumentoConnection_id | DocumentoConnectionCreatedAt | DocumentoConnectionUpdatedAt | DocumentoConnectionArchivo | DocumentoConnectionUser | Equipo | createEquipoPayload | updateEquipoPayload | deleteEquipoPayload | EquipoConnection | EquipoAggregator | EquipoGroupBy | EquipoConnection_id | EquipoConnectionCreatedAt | EquipoConnectionUpdatedAt | EquipoConnectionNombre | Registro | createRegistroPayload | updateRegistroPayload | deleteRegistroPayload | RegistroConnection | RegistroAggregator | RegistroGroupBy | RegistroConnection_id | RegistroConnectionCreatedAt | RegistroConnectionUpdatedAt | RegistroConnectionHora | RegistroConnectionUser | UploadFile | UploadFileConnection | UploadFileAggregator | UploadFileGroupBy | UploadFileConnection_id | UploadFileConnectionCreatedAt | UploadFileConnectionUpdatedAt | UploadFileConnectionName | UploadFileConnectionHash | UploadFileConnectionSha256 | UploadFileConnectionExt | UploadFileConnectionMime | UploadFileConnectionSize | UploadFileConnectionUrl | UploadFileConnectionProvider | UploadFileConnectionPublic_id | UsersPermissionsPermission | UsersPermissionsRole | createRolePayload | updateRolePayload | deleteRolePayload | UsersPermissionsRoleConnection | UsersPermissionsRoleAggregator | UsersPermissionsRoleGroupBy | UsersPermissionsRoleConnection_id | UsersPermissionsRoleConnectionName | UsersPermissionsRoleConnectionDescription | UsersPermissionsRoleConnectionType | UsersPermissionsUser | createUserPayload | updateUserPayload | deleteUserPayload | UsersPermissionsUserConnection | UsersPermissionsUserAggregator | UsersPermissionsUserGroupBy | UsersPermissionsUserConnection_id | UsersPermissionsUserConnectionUsername | UsersPermissionsUserConnectionEmail | UsersPermissionsUserConnectionProvider | UsersPermissionsUserConnectionConfirmed | UsersPermissionsUserConnectionBlocked | UsersPermissionsUserConnectionRole | UsersPermissionsUserConnectionEquipo | UsersPermissionsUserConnectionManager | UsersPermissionsUserConnectionDocumento | UsersPermissionsUserConnectionAvatar
 
 type Mutation {
   createDia(input: createDiaInput): createDiaPayload
@@ -372,6 +389,9 @@ type Mutation {
   createEquipo(input: createEquipoInput): createEquipoPayload
   updateEquipo(input: updateEquipoInput): updateEquipoPayload
   deleteEquipo(input: deleteEquipoInput): deleteEquipoPayload
+  createRegistro(input: createRegistroInput): createRegistroPayload
+  updateRegistro(input: updateRegistroInput): updateRegistroPayload
+  deleteRegistro(input: deleteRegistroInput): deleteRegistroPayload
 
   """Create a new role"""
   createRole(input: createRoleInput): createRolePayload
@@ -403,6 +423,9 @@ type Query {
   equipo(id: ID!): Equipo
   equipos(sort: String, limit: Int, start: Int, where: JSON): [Equipo]
   equiposConnection(sort: String, limit: Int, start: Int, where: JSON): EquipoConnection
+  registro(id: ID!): Registro
+  registros(sort: String, limit: Int, start: Int, where: JSON): [Registro]
+  registrosConnection(sort: String, limit: Int, start: Int, where: JSON): RegistroConnection
   files(sort: String, limit: Int, start: Int, where: JSON): [UploadFile]
   filesConnection(sort: String, limit: Int, start: Int, where: JSON): UploadFileConnection
   role(id: ID!): UsersPermissionsRole
@@ -416,6 +439,62 @@ type Query {
   users(sort: String, limit: Int, start: Int, where: JSON): [UsersPermissionsUser]
   usersConnection(sort: String, limit: Int, start: Int, where: JSON): UsersPermissionsUserConnection
   me: UsersPermissionsMe
+}
+
+type Registro {
+  _id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  hora: DateTime
+  user: UsersPermissionsUser
+}
+
+type RegistroAggregator {
+  count: Int
+}
+
+type RegistroConnection {
+  values: [Registro]
+  groupBy: RegistroGroupBy
+  aggregate: RegistroAggregator
+}
+
+type RegistroConnection_id {
+  key: ID
+  connection: RegistroConnection
+}
+
+type RegistroConnectionCreatedAt {
+  key: DateTime
+  connection: RegistroConnection
+}
+
+type RegistroConnectionHora {
+  key: DateTime
+  connection: RegistroConnection
+}
+
+type RegistroConnectionUpdatedAt {
+  key: DateTime
+  connection: RegistroConnection
+}
+
+type RegistroConnectionUser {
+  key: ID
+  connection: RegistroConnection
+}
+
+type RegistroGroupBy {
+  _id: [RegistroConnection_id]
+  createdAt: [RegistroConnectionCreatedAt]
+  updatedAt: [RegistroConnectionUpdatedAt]
+  hora: [RegistroConnectionHora]
+  user: [RegistroConnectionUser]
+}
+
+input RegistroInput {
+  hora: DateTime
+  user: ID
 }
 
 input RoleInput {
@@ -451,6 +530,15 @@ input updateEquipoInput {
 
 type updateEquipoPayload {
   equipo: Equipo
+}
+
+input updateRegistroInput {
+  where: InputID
+  data: editRegistroInput
+}
+
+type updateRegistroPayload {
+  registro: Registro
 }
 
 input updateRoleInput {
@@ -589,6 +677,7 @@ input UserInput {
   manager: Boolean
   documento: ID
   avatar: ID
+  registros: [ID]
 }
 
 type UsersPermissionsMe {
@@ -676,6 +765,7 @@ type UsersPermissionsUser {
   documento: Documento
   avatar: UploadFile
   dias(sort: String, limit: Int, start: Int, where: JSON): [Dia]
+  registros(sort: String, limit: Int, start: Int, where: JSON): [Registro]
 }
 
 type UsersPermissionsUserAggregator {
