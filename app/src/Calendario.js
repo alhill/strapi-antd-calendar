@@ -200,8 +200,6 @@ class Calendario extends Component{
                     footer={[
                         <Button key="libre" onClick={() => this.solicitarDia( this.state.dia, "libre")}>Día libre</Button>,
                         <Button key="remoto" type="primary" onClick={() => this.solicitarDia( this.state.dia, "remoto")}>Día remoto</Button>
-                        <Button key="remoto" type="primary" onClick={() => this.solicitarDia( this.state.dia, "remoto")}>Día remoto</Button>
-
                       ]}
                 >
                     <p>Solicitar el día { moment(this.state.dia).format("DD/MM/YYYY") } como... </p>
