@@ -1,6 +1,8 @@
 import React, { Component } from 'react'
 import { Form, Icon, Input, Button, Layout, Card, Row, Col, message } from 'antd';
 import { saveAuthData } from './utils/auth';
+import { connect } from 'react-redux'
+import { fetchCalendario, fetchUsuarios, fetchES } from './actions'
 
 function hasErrors(fieldsError) {
     return Object.keys(fieldsError).some(field => fieldsError[field]);
@@ -23,7 +25,7 @@ class Login extends Component{
         this.props.form.validateFields((err, values) => {
           if (!err) {
             //console.log('Received values of form: ', values);
-            fetch("http://localhost:1337/auth/local", {
+            fetch(process.env.REACT_APP_API_URL + "/auth/local", {
                 method: "POST",
                 headers: {
                     "Accept": "application/json",
@@ -42,6 +44,9 @@ class Login extends Component{
                     else{
                         this.setState({ error: false })
                         saveAuthData(data);
+                                this.props.dispatch(fetchUsuarios())
+        this.props.dispatch(fetchCalendario())
+        this.props.dispatch(fetchES())
                         this.props.history.push("/calendario")
                     }
                 }).catch(err => console.log(err))
@@ -111,7 +116,7 @@ class Login extends Component{
     }
 }
 
-export default Form.create({ name: 'login_form' })(Login)
+export default Form.create({ name: 'login_form' })(connect()(Login))
 
 
 

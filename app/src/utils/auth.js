@@ -20,22 +20,8 @@ export function getUserInfo(){
     return userObj
 }
 
-export async function getAvatar(){
-    const avatar = ( await ( await fetch(gql(`{
-        user(id: "${getUserInfo()._id}"){
-            avatar{
-                url
-            }
-        }
-    }`), {
-        method: "GET",
-        headers: getHeaders()
-    })).json()).data.user.avatar.url
-    return avatar
-}
-
 export function saveAuthData(authdata){
-    authdata.avatar = getAvatar()
+    //authdata.avatar = getAvatar()
     window.localStorage.setItem('jwt', JSON.stringify(authdata.jwt))
     window.localStorage.setItem('user', JSON.stringify(authdata.user))
 }

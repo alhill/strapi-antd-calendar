@@ -6,9 +6,11 @@ import gql from './utils/gql';
 import request from './utils/request';
 import Frame from './Frame';
 import PrivateComponent from './PrivateComponent';
+import { connect } from 'react-redux'
+import { fetchCalendario } from './actions';
 const { Title, Paragraph } = Typography;
 
-const query = `{
+const query = getUserInfo() ? `{
     dias(where: { equipo: "${getUserInfo().equipo }" }){
         _id
         fecha
@@ -22,7 +24,7 @@ const query = `{
             }
         }
     }
-}`
+}` : "{}"
 
 class Calendario extends Component{
     state = {
@@ -39,7 +41,7 @@ class Calendario extends Component{
         const columns = [{
             title: 'Nombre de usuario',
             key: 'user',
-            render: r => r.user.username
+            render: r => r.user && r.user.username
         }, {
             title: 'Tipo',
             dataIndex: 'tipo',
@@ -53,36 +55,35 @@ class Calendario extends Component{
             key: 'action',
             render: (text, record) => (
               <span>
-                <Popconfirm title={`¿Estás seguro de que deseas aceptar la solicitud de día ${record.tipo} para el día ${moment(record.fecha).format("YYYY-MM-DD")} a ${record.user.username}?`} onConfirm={evt => this.responderSolicitud(record, true)}>
+                <Popconfirm title={`¿Estás seguro de que deseas aceptar la solicitud de día ${record.tipo} para el día ${moment(record.fecha).format("YYYY-MM-DD")} a ${record.user && record.user.username}?`} onConfirm={evt => this.responderSolicitud(record, true)}>
                     <Tag color="green" key={`${record._id}_aceptar`}>Aprobar</Tag>
                 </Popconfirm>
-                <Popconfirm title={`¿Estás seguro de que deseas denegar la solicitud de día ${record.tipo} para el día ${moment(record.fecha).format("YYYY-MM-DD")} a ${record.user.username}?`} onConfirm={evt => this.responderSolicitud(record, false)}>
+                <Popconfirm title={`¿Estás seguro de que deseas denegar la solicitud de día ${record.tipo} para el día ${moment(record.fecha).format("YYYY-MM-DD")} a ${record.user && record.user.username}?`} onConfirm={evt => this.responderSolicitud(record, false)}>
                     <Tag color="volcano" key={`${record._id}_denegar`}>Denegar</Tag>
                 </Popconfirm>
               </span>
             ),
         }]
-
         this.setState({ columns })
-        this.fetchDias()
     }
 
     componentDidUpdate(prevProps, prevState){
         if(prevState.sel1 !== this.state.sel1 || prevState.sel2 !== this.state.sel2){
             this.setState({ diasFilter: this.filtrarDias(this.state.dias) })
         }
+        else if(prevProps.dias !== this.props.dias){
+            this.organizarDias()
+        }
     }
 
-    fetchDias = () => {         
-        fetch(gql(query), {
-            method: "GET",
-            headers: getHeaders()
-        }).then(resp => {
-            console.log(resp)
-            resp.json().then(data => {
-                this.setState({ dias: data.data.dias, diasFilter: this.filtrarDias(data.data.dias), diasPorAprobar: data.data.dias.filter(d => !d.aprobado).map(d => ({...d, key: d._id})) })
-            }).catch(err => console.log(err))
-        }).catch(err => console.log(err))
+    fetchDias = async () => {         
+        await this.props.dispatch(fetchCalendario())
+        this.organizarDias()
+    }
+
+    organizarDias = () => {
+        const { dias } = this.props
+        this.setState({ dias, diasFilter: this.filtrarDias(dias), diasPorAprobar:dias.filter(d => !d.aprobado).map(d => ({...d, key: d._id})) })
     }
    
     filtrarDias = (dias) => {
@@ -115,7 +116,7 @@ class Calendario extends Component{
                 method: "DELETE",
             }).then(resp => {
                 message.info("Se ha denegado la solicitud de día " + dia.tipo)
-                this.fetchDias()               
+                this.fetchDias()    
             }).catch(err => {
                 message.error(`Se ha producido un error durante la denegación del día ${dia.tipo} solicitado`)       
                 console.error(err)
@@ -151,7 +152,9 @@ class Calendario extends Component{
 
     solicitarDia = (fecha, tipo) => {
         const { _id, equipo } = getUserInfo()
-        fetch("http://localhost:1337/dias", {
+        console.log(getUserInfo())
+        console.log(tipo)
+        fetch(process.env.REACT_APP_API_URL + "/dias", {
             method: "POST",
             headers: getHeaders(),
             body: JSON.stringify({
@@ -159,6 +162,7 @@ class Calendario extends Component{
             })
         }).then(resp => {
             resp.json().then(dia => {
+                console.log(dia)
                 message.info(`Has solicitado como día ${tipo} el ${moment(this.state.dia).format("DD/MM/YYYY")}. Tu solicitud está pendiente de aprobación`); 
                 this.fetchDias()
                 this.setState({ modalPedirDia: false, dias: [...this.state.dias, dia] })
@@ -209,4 +213,10 @@ class Calendario extends Component{
     }
 }
 
-export default Calendario
+const mapStateToProps = state => {
+    return {
+        dias: state.dias
+    }
+}
+
+export default connect(mapStateToProps)(Calendario)

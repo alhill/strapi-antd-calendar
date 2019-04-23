@@ -3,6 +3,7 @@ import { Menu, Layout, Typography, Avatar, Badge, Dropdown, Icon, message } from
 import { Link, withRouter } from 'react-router-dom'
 import { getUserInfo, clearData, getAvatar } from './utils/auth';
 import { socketConnect } from 'socket.io-react';
+import { connect } from 'react-redux'
 import PrivateComponent from './PrivateComponent';
 
 const { Header, Footer, Sider, Content } = Layout;
@@ -26,8 +27,6 @@ class Frame extends Component{
 
     async componentDidMount(){
         const user = getUserInfo()
-//console.log(await getAvatar())
-        console.log( user )
         this.props.socket.on('notification', msg => {
             if(user.equipo === msg.equipo && user.manager === true){
                 console.log(msg)
@@ -55,7 +54,7 @@ class Frame extends Component{
                     <img src={process.env.REACT_APP_API_URL + "/logo.png"} alt="Blacknosaur Logo" style={{ filter: "invert(1)", height: 45, marginRight: 20 }} /> Portal del Blacknosaurio
                 </Title>
                 <Dropdown overlay={menuAvatar}>
-                    <Avatar src={user.avatar && (process.env.REACT_APP_API_URL + user.avatar.url)}>{ user.username[0].toUpperCase() }</Avatar>
+                    <Avatar src={(user && user.avatar) && (process.env.REACT_APP_API_URL + user.avatar.url)}>{ user && user.username[0].toUpperCase() }</Avatar>
                 </Dropdown>
             </Header>,
             <Layout key="layout">
@@ -64,13 +63,13 @@ class Frame extends Component{
                         <Menu.Item><Link to="/calendario">Calendario</Link></Menu.Item>
                         <Menu.Item><Link to="/documentos">Documentos</Link></Menu.Item>
                         <Menu.Item><Link to="/registro">Registro E/S</Link></Menu.Item>
-                        <Menu.Item style={{display: user.manager ? "flex" : "none"}}>
+                        <Menu.Item style={{display: (user && user.manager) ? "flex" : "none"}}>
                             <Badge count={this.state.userNotif}>
                                 <Link to="/usuarios">Usuarios</Link>
                             </Badge>
                         </Menu.Item>
-                        <Menu.Item style={{display: user.manager ? "flex" : "none"}}><Link to="/analitica">Analítica</Link></Menu.Item>
-                        <Menu.Item style={{display: user.manager ? "flex" : "none"}}><Link to="/configuracion">Configuración</Link></Menu.Item>
+                        <Menu.Item style={{display: (user && user.manager) ? "flex" : "none"}}><Link to="/analitica">Analítica</Link></Menu.Item>
+                        <Menu.Item style={{display: (user && user.manager) ? "flex" : "none"}}><Link to="/configuracion">Configuración</Link></Menu.Item>
                     </Menu>
                 </Sider>
                 <Layout>
@@ -86,4 +85,4 @@ class Frame extends Component{
     }
 }
 
-export default socketConnect(withRouter(Frame))
+export default socketConnect(connect()(withRouter(Frame)))

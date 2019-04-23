@@ -17,32 +17,47 @@ import NuevoUsuario from './NuevoUsuario';
 import Documentos from './Documentos';
 import Usuarios from './Usuarios';
 import Analitica from './Analitica';
+import Registro from './Registro';
 import Configuracion from './Configuracion';
+import { Provider } from 'react-redux';
+import { getUserInfo } from './utils/auth'
+import store from './store';
+import { fetchCalendario, fetchUsuarios, fetchES } from './actions'
 moment.locale('es');
 
 const socket = io.connect(process.env.REACT_APP_API_URL);
 
 class App extends Component {
+  componentDidMount(){
+    if( getUserInfo() ){
+      store.dispatch(fetchUsuarios())
+      store.dispatch(fetchCalendario())
+      store.dispatch(fetchES())
+    }
+  }
   render() {
     return (
-      <LocaleProvider locale={esES}>
-        <SocketProvider socket={socket}>
-          <BrowserRouter>
-            <Switch>
-              <Route exact path="/login" component={Login} />
-              <Route exact path="/register" component={Register} />
-              <PrivateRoute exact path="/calendario" component={Calendario} />
-              <PrivateRoute exact path="/documentos" component={Documentos} />
-              <PrivateRoute onlyManager={true} exact path="/usuarios" component={Usuarios} />
-              <PrivateRoute onlyManager={true} exact path="/analitica" component={Analitica} />
-              <PrivateRoute onlyManager={true} exact path="/configuracion" component={Configuracion} />
-              <PrivateRoute exact path="/nuevousuario" component={NuevoUsuario} />
-              <PrivateRoute exact path="/" component={Home} />
-              <Route path="" component={FourOhFour} />
-            </Switch>
-          </BrowserRouter>
-        </SocketProvider>
-      </LocaleProvider>
+      <Provider store={store}>
+        <LocaleProvider locale={esES}>
+          <SocketProvider socket={socket}>
+            <BrowserRouter>
+              <Switch>
+                <Route exact path="/login" component={Login} />
+                <Route exact path="/register" component={Register} />
+                <PrivateRoute exact path="/calendario" component={Calendario} />
+                <PrivateRoute exact path="/documentos" component={Documentos} />
+                <PrivateRoute onlyManager={true} exact path="/usuarios" component={Usuarios} />
+                <PrivateRoute onlyManager={true} exact path="/analitica" component={Analitica} />
+                <PrivateRoute onlyManager={true} exact path="/configuracion" component={Configuracion} />
+                <PrivateRoute exact path="/registro" component={Registro} />
+                <PrivateRoute exact path="/nuevousuario" component={NuevoUsuario} />
+                <PrivateRoute exact path="/" component={Home} />
+                <Route path="" component={FourOhFour} />
+              </Switch>
+            </BrowserRouter>
+          </SocketProvider>
+        </LocaleProvider>
+      </Provider>
     );
   }
 }

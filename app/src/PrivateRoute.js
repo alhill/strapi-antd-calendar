@@ -3,20 +3,22 @@ import { Redirect, Route } from 'react-router-dom';
 import { getUserInfo } from './utils/auth';
 
 export const PrivateRoute = ({ component: Component, onlyManager = false, ...rest }) => {
+    const userInfo = getUserInfo();
     return(
-    <Route
-        {...rest}
-        render={props => 
-            ( !onlyManager || ( onlyManager && getUserInfo().manager )) ? (
-                <Component {...props} />
-            ) : (
-                <Redirect
-                    to={{
-                        pathname: "/",
-                        state: { from: props.location }
-                    }}
-                />
-            )
-        }
-    />
-)}
+        <Route
+            {...rest}
+            render={props => 
+                userInfo && (!onlyManager || ( onlyManager && userInfo.manager )) ? (
+                    <Component {...props} />
+                ) : (
+                    <Redirect
+                        to={{
+                            pathname: "/login",
+                            state: { from: props.location }
+                        }}
+                    />
+                )
+            }
+        />
+    )
+}

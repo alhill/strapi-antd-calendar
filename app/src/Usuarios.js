@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { Layout, Table, Tag, Popconfirm, message, Icon } from 'antd'
 import Frame from './Frame';
+import { connect } from 'react-redux'
 import request from './utils/request';
 
 
@@ -33,26 +34,34 @@ class Usuarios extends Component{
             key: 'action',
             render: (text, record) => (
               <span>
-                <Popconfirm title={`¿Estás seguro de que deseas aceptar en ${record.equipo.nombre} a ${record.email}?`} onConfirm={evt => this.responderSolicitud(record, true)}>
+                <Popconfirm title={`¿Estás seguro de que deseas aceptar en ${record.equipo && record.equipo.nombre} a ${record.email}?`} onConfirm={evt => this.responderSolicitud(record, true)}>
                     <Tag color="green" key={`${record._id}_aceptar`}>Aceptar</Tag>
                 </Popconfirm>
-                <Popconfirm title={`¿Estás seguro de que deseas denegar la solicitud de ${record.email} para entrar en ${record.equipo.nombre}?`} onConfirm={evt => this.responderSolicitud(record, false)}>
+                <Popconfirm title={`¿Estás seguro de que deseas denegar la solicitud de ${record.email} para entrar en ${record.equipo && record.equipo.nombre}?`} onConfirm={evt => this.responderSolicitud(record, false)}>
                     <Tag color="volcano" key={`${record._id}_denegar`}>Denegar</Tag>
                 </Popconfirm>
               </span>
             ),
         }]
         this.setState({ columns, extraColumnsA, extraColumnsB })
-        this.fetchUsers()
+        if(this.props.usuarios){
+            console.log("cdm")
+            this.filtraUsuarios(this.props.usuarios)
+        }
     }
 
-    fetchUsers = async () => {
-        const users = await request("/users")
-        const activos = users.filter(u => u.confirmed).map(u => ({...u, key: u._id}))
-        const pendientes = users.filter(u => !u.confirmed).map(u => ({...u, key: u._id}))
+    componentDidUpdate(prevProps){
+        if(prevProps.usuarios !== this.props.usuarios){
+            console.log("cdu")
+            this.filtraUsuarios(this.props.usuarios)
+        }
+    }
+
+    filtraUsuarios = usuarios => {
+        const activos = this.props.usuarios.filter(u => u.confirmed).map(u => ({...u, key: u._id}))
+        const pendientes = this.props.usuarios.filter(u => !u.confirmed).map(u => ({...u, key: u._id}))
         this.setState({ activos, pendientes })
     }
-
     responderSolicitud = (usuario, bool) => {
         if(bool){ //Aceptar
             request("/users/" + usuario._id, {
@@ -81,7 +90,7 @@ class Usuarios extends Component{
     
     render(){
         const { activos, pendientes, columns, extraColumnsA, extraColumnsB } = this.state
-        console.log(columns)
+        //console.log(columns)
         return(
             <Layout style={{height:"100vh"}}>
                 <Frame>
@@ -95,4 +104,10 @@ class Usuarios extends Component{
     }
 }
 
-export default Usuarios
+const mapStateToProps = state => {
+    return {
+        usuarios: state.usuarios
+    }
+}
+
+export default connect(mapStateToProps)(Usuarios)
