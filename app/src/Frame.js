@@ -28,13 +28,16 @@ class Frame extends Component{
     async componentDidMount(){
         const user = getUserInfo()
         this.props.socket.on('notification', msg => {
+            console.log(msg)
             if(user.equipo === msg.equipo && user.manager === true){
                 console.log(msg)
                 this.setState({ userNotif: this.state.userNotif + 1 })
             }
         });
+
         this.setState({ user })
     }
+    
 
     render(){
         const { user } = this.state

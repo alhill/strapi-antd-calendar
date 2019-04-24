@@ -28,12 +28,13 @@ class NuevoUsuario extends Component{
     solicitarAcceso = e => {
         e.preventDefault()
         this.props.form.validateFields((err, values) => {
-            fetch(gql(query, { nombre: values.unirse }), { headers: getHeaders() })
+            fetch(process.env.REACT_APP_API_URL + gql(query, { nombre: values.unirse }), { headers: getHeaders() })
                 .then(response => {
+                    console.log(response)
                     response.json().then(data => {
                         console.log(data)
                         if(data.data.equipos[0]){
-                            fetch("http://localhost:1337/users/" + getUserInfo()._id, {
+                            fetch(process.env.REACT_APP_API_URL + "/users/" + getUserInfo()._id, {
                                 method: "PUT",
                                 headers: getHeaders(),
                                 body: JSON.stringify({
@@ -58,7 +59,7 @@ class NuevoUsuario extends Component{
     crearEquipo = e => {
         e.preventDefault()
         this.props.form.validateFields((err, values) => {
-            fetch("http://localhost:1337/equipos", {
+            fetch(process.env.REACT_APP_API_URL + "/equipos", {
                 method: "POST",
                 headers: getHeaders(),
                 body: JSON.stringify({
@@ -67,7 +68,7 @@ class NuevoUsuario extends Component{
                 })
             }).then(response => {
                 response.json().then(data => {
-                    fetch("http://localhost:1337/users/" + getUserInfo()._id, {
+                    fetch(process.env.REACT_APP_API_URL + "/users/" + getUserInfo()._id, {
                         method: "PUT",
                         headers: getHeaders(),
                         body: JSON.stringify({

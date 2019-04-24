@@ -28,7 +28,7 @@ export function queryES(variables){
             registros{
                 _id
                 fecha
-                idCard
+                idcard
             }
         }
     }

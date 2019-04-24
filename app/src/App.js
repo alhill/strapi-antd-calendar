@@ -29,7 +29,8 @@ const socket = io.connect(process.env.REACT_APP_API_URL);
 
 class App extends Component {
   componentDidMount(){
-    if( getUserInfo() ){
+    const userInfo = getUserInfo()
+    if( userInfo && userInfo.equipo ){
       store.dispatch(fetchUsuarios())
       store.dispatch(fetchCalendario())
       store.dispatch(fetchES())

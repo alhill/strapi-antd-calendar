@@ -28,7 +28,7 @@ class Register extends Component{
             if (!err) {
                 if( values.password === values.password2 ){
                     if(this.validateEmail(values.email)){
-                        fetch("http://localhost:1337/auth/local/register", {
+                        fetch(process.env.REACT_APP_API_URL + "/auth/local/register", {
                             method: "POST",
                             headers: getHeaders(true),
                             body: JSON.stringify({ 

@@ -1,7 +1,9 @@
 import React, { Component } from 'react'
-import { Layout, Table, Tag, Popconfirm, message, Icon } from 'antd'
+import { Layout, Table, Tag, Popconfirm, message, Icon, Button, Modal } from 'antd'
 import Frame from './Frame';
+import { socketConnect } from 'socket.io-react';
 import { connect } from 'react-redux'
+import { fetchUsuarios } from './actions'
 import request from './utils/request';
 
 
@@ -28,6 +30,12 @@ class Usuarios extends Component{
             title: 'Manager',
             dataIndex: 'manager',
             render: bool => bool ? <Icon type="check-circle" theme="twoTone" twoToneColor="#eb2f96" twoToneColor="#52c41a"/> : <Icon type="close-circle" theme="twoTone" twoToneColor="#eb2f96"/>
+        }, {
+            title: 'ID Tarjeta',
+            key: 'idcard',
+            render: (text, record) => {
+                return record.idcard ? record.idcard : <Button type="primary" onClick={() => this.setState({ modalAsociar: true, usuarioAsociar: record._id })}>Asociar tarjeta</Button>
+            }
         }]
         const extraColumnsB = [{
             title: 'Acción',
@@ -45,15 +53,38 @@ class Usuarios extends Component{
         }]
         this.setState({ columns, extraColumnsA, extraColumnsB })
         if(this.props.usuarios){
-            console.log("cdm")
-            this.filtraUsuarios(this.props.usuarios)
+            this.filtraUsuarios(this.props.usuarios) 
         }
     }
 
-    componentDidUpdate(prevProps){
+    componentDidUpdate(prevProps, prevState){
         if(prevProps.usuarios !== this.props.usuarios){
-            console.log("cdu")
             this.filtraUsuarios(this.props.usuarios)
+        }
+        else if(prevState.modalAsociar !== this.state.modalAsociar){
+            if( this.state.modalAsociar ){
+                console.log("holi")
+                this.props.socket.on('notification', msg => {
+                    console.log(msg)
+                    request("/users/" + this.state.usuarioAsociar, {
+                        method: "PUT",
+                        body: {
+                            idcard: msg.es
+                        }
+                    }).then(data => {
+                        message.info("La tarjeta ha sido asociada correctamente")
+                        this.fetchUsers()
+                        this.setState({ modalAsociar: false, usuarioAsociar: undefined })
+                    }).catch(err => {
+                        message.error("Se produjo un error durante el proceso de asociación de la tarjeta")
+                        console.log(err)
+                        this.setState({ modalAsociar: false, usuarioAsociar: undefined })
+                    })
+                })
+            }
+            else{
+                this.props.socket.off('notification')
+            }
         }
     }
 
@@ -62,6 +93,12 @@ class Usuarios extends Component{
         const pendientes = this.props.usuarios.filter(u => !u.confirmed).map(u => ({...u, key: u._id}))
         this.setState({ activos, pendientes })
     }
+
+    fetchUsers = async () => {
+        await this.props.dispatch(fetchUsuarios())
+        this.filtraUsuarios(this.props.usuarios)
+    }
+
     responderSolicitud = (usuario, bool) => {
         if(bool){ //Aceptar
             request("/users/" + usuario._id, {
@@ -99,6 +136,16 @@ class Usuarios extends Component{
                     <h1>Usuarios pendientes de aprobación</h1>
                     <Table dataSource={pendientes} columns={[...columns, ...extraColumnsB]} />
                 </Frame>
+                <Modal
+                    visible={this.state.modalAsociar}
+                    onOk={e => e}
+                    onCancel={() => this.setState({ modalAsociar: false, usuarioAsociar: undefined })}
+                    footer={[
+                        <Button key="back" type="primary" onClick={() => this.setState({ modalAsociar: false, usuarioAsociar: undefined })}>Cancelar</Button>,
+                    ]}
+                >
+                    <p>Acerca la tarjeta al lector sin cerrar esta ventana para asociarla al usuario</p>
+                </Modal>
             </Layout>
         )
     }
@@ -110,4 +157,4 @@ const mapStateToProps = state => {
     }
 }
 
-export default connect(mapStateToProps)(Usuarios)
+export default socketConnect(connect(mapStateToProps)(Usuarios))

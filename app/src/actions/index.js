@@ -52,7 +52,7 @@ export function cargarES(payload) {
 export const fetchES = () => {
     return (dispatch) => {
         return request(gql(queryES(getUserInfo()))).then(response => {
-            dispatch(cargarES(response.data.equipo.users))
+            dispatch(cargarES(response.data.equipo && response.data.equipo.users))
         })
         .catch(error => {
             throw(error);
