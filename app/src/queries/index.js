@@ -29,6 +29,10 @@ export function queryES(variables){
                 _id
                 fecha
                 idcard
+                user{
+                    _id
+                    username
+                }
             }
         }
     }

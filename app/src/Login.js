@@ -44,9 +44,9 @@ class Login extends Component{
                     else{
                         this.setState({ error: false })
                         saveAuthData(data);
-                                this.props.dispatch(fetchUsuarios())
-        this.props.dispatch(fetchCalendario())
-        this.props.dispatch(fetchES())
+                        this.props.dispatch(fetchUsuarios())
+                        this.props.dispatch(fetchCalendario())
+                        this.props.dispatch(fetchES())
                         this.props.history.push("/calendario")
                     }
                 }).catch(err => console.log(err))

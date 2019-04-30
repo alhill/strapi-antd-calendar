@@ -3,7 +3,8 @@ import { Menu, Layout, Typography, Avatar, Badge, Dropdown, Icon, message } from
 import { Link, withRouter } from 'react-router-dom'
 import { getUserInfo, clearData, getAvatar } from './utils/auth';
 import { socketConnect } from 'socket.io-react';
-import { connect } from 'react-redux'
+import { connect } from 'react-redux';
+import { fetchES } from './actions';
 import PrivateComponent from './PrivateComponent';
 
 const { Header, Footer, Sider, Content } = Layout;
@@ -28,10 +29,11 @@ class Frame extends Component{
     async componentDidMount(){
         const user = getUserInfo()
         this.props.socket.on('notification', msg => {
-            console.log(msg)
             if(user.equipo === msg.equipo && user.manager === true){
-                console.log(msg)
                 this.setState({ userNotif: this.state.userNotif + 1 })
+            }
+            if(msg.es){
+                this.props.dispatch(fetchES())
             }
         });
 
@@ -67,9 +69,9 @@ class Frame extends Component{
                         <Menu.Item><Link to="/documentos">Documentos</Link></Menu.Item>
                         <Menu.Item><Link to="/registro">Registro E/S</Link></Menu.Item>
                         <Menu.Item style={{display: (user && user.manager) ? "flex" : "none"}}>
-                            <Badge count={this.state.userNotif}>
+                            {/*<Badge count={this.state.userNotif}>*/}
                                 <Link to="/usuarios">Usuarios</Link>
-                            </Badge>
+                            {/*</Badge>*/}
                         </Menu.Item>
                         <Menu.Item style={{display: (user && user.manager) ? "flex" : "none"}}><Link to="/analitica">Analítica</Link></Menu.Item>
                         <Menu.Item style={{display: (user && user.manager) ? "flex" : "none"}}><Link to="/configuracion">Configuración</Link></Menu.Item>

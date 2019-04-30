@@ -34,7 +34,14 @@ class Usuarios extends Component{
             title: 'ID Tarjeta',
             key: 'idcard',
             render: (text, record) => {
-                return record.idcard ? record.idcard : <Button type="primary" onClick={() => this.setState({ modalAsociar: true, usuarioAsociar: record._id })}>Asociar tarjeta</Button>
+                return record.idcard ? 
+                    <div>
+                        <span>{record.idcard}&nbsp;&nbsp;</span>
+                        <Popconfirm title={`¿Estás seguro de que deseas desasociar la tarjeta de ${record.email}?`} onConfirm={evt => this.desasociarTarjeta(record)}>
+                            <Tag color="volcano" key={`${record._id}_denegar`}><Icon type="delete" /></Tag>
+                        </Popconfirm>
+                    </div>
+                    : <Button type="primary" onClick={() => this.setState({ modalAsociar: true, usuarioAsociar: record._id })}>Asociar tarjeta</Button>
             }
         }]
         const extraColumnsB = [{
@@ -63,23 +70,27 @@ class Usuarios extends Component{
         }
         else if(prevState.modalAsociar !== this.state.modalAsociar){
             if( this.state.modalAsociar ){
-                console.log("holi")
                 this.props.socket.on('notification', msg => {
                     console.log(msg)
-                    request("/users/" + this.state.usuarioAsociar, {
-                        method: "PUT",
-                        body: {
-                            idcard: msg.es
-                        }
-                    }).then(data => {
-                        message.info("La tarjeta ha sido asociada correctamente")
-                        this.fetchUsers()
-                        this.setState({ modalAsociar: false, usuarioAsociar: undefined })
-                    }).catch(err => {
-                        message.error("Se produjo un error durante el proceso de asociación de la tarjeta")
-                        console.log(err)
-                        this.setState({ modalAsociar: false, usuarioAsociar: undefined })
-                    })
+                    if(!this.props.usuarios.map(u => u.idcard).includes(msg.es)){
+                        request("/users/" + this.state.usuarioAsociar, {
+                            method: "PUT",
+                            body: {
+                                idcard: msg.es
+                            }
+                        }).then(data => {
+                            message.info("La tarjeta ha sido asociada correctamente")
+                            this.fetchUsers()
+                            this.setState({ modalAsociar: false, usuarioAsociar: undefined })
+                        }).catch(err => {
+                            message.error("Se produjo un error durante el proceso de asociación de la tarjeta")
+                            console.log(err)
+                            this.setState({ modalAsociar: false, usuarioAsociar: undefined })
+                        })
+                    }
+                    else{
+                        message.error("Esa tarjeta ya está asociada a un usuario. Desasociela antes de reasignarla.")
+                    }
                 })
             }
             else{
@@ -123,6 +134,16 @@ class Usuarios extends Component{
                 console.error(err)
             })
         }
+    }
+
+    desasociarTarjeta = usuario => {
+        console.log(usuario)
+        request("/users/" + usuario._id, {
+            method: "PUT",
+            body: {
+                idcard: ""
+            }
+        }).then(() => this.fetchUsers())
     }
     
     render(){

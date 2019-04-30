@@ -15,7 +15,8 @@ export function cargarUsuarios(payload) {
   
 export const fetchUsuarios = () => {
     return (dispatch) => {
-        return request("/users").then(response => {
+        const equipo = getUserInfo() && getUserInfo().equipo
+        return request("/users?equipo=" + equipo).then(response => {
             dispatch(cargarUsuarios(response))
         })
         .catch(error => {
