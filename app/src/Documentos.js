@@ -1,41 +1,249 @@
 import React, { Component } from 'react'
-import { Layout, Upload, Icon, message } from 'antd'
+import { Layout, Upload, Icon, message, Table, Button, Select, Tag, Popconfirm } from 'antd'
 import Frame from './Frame';
+import { getUserInfo, getToken } from './utils/auth';
+import { connect } from 'react-redux'
+import request from './utils/request';
 
 
 class Documentos extends Component{
 
-    props = {
-        name: 'file',
-        multiple: true,
-        action: '//jsonplaceholder.typicode.com/posts/',
-        onChange(info) {
-            const status = info.file.status;
-            if (status !== 'uploading') {
-                console.log(info.file, info.fileList);
+    state = {
+        fileList: [],
+        asociarA: [],
+        userInfo: getUserInfo(),
+        selectedUser: {documentos: []},
+        columns: [{
+            title: 'Nombre de usuario',
+            dataIndex: 'username',
+            key: 'username',
+        }, {
+            title: 'Email',
+            dataIndex: 'email',
+            key: 'email',
+        }],
+        misArchColumns: [{
+            title: 'Nombre de archivo',
+            dataIndex: 'name',
+            key: 'name',
+        }, {
+            key: "archivo",
+            render: file => {
+                console.log(file)
+            return <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                <a href={process.env.REACT_APP_API_URL + file.url} target="_blank" rel="noopener noreferrer">
+                    <Tag color="geekblue" key={`${file._id}_file`}><Icon type="file-text" /> Enlace</Tag>
+                </a>
+                <Popconfirm 
+                    title={`¿Estás seguro de que deseas desvincular ${file.name} de ${this.state.selectedUser.username}?`} 
+                    onConfirm={() => this.desvincularArchivo(file, this.state.selectedUser)}>
+                    <Tag color="orange" key={`${file._id}_file`}><Icon type="disconnect" /> Desvincular</Tag>
+                </Popconfirm>
+                <Popconfirm 
+                    title={`¿Estás seguro de que deseas borrar ${file.name}? Esto borrará el archivo para todos los usuarios`} 
+                    onConfirm={() => this.borrarArchivo(file)}
+                    icon={<Icon type="warning" style={{ color: 'red' }} />}
+                >
+                    <Tag color="volcano" key={`${file._id}_file`}><Icon type="delete" /> Borrar</Tag>
+                </Popconfirm>
+            </div>
             }
-            if (status === 'done') {
-                message.success(`${info.file.name} file uploaded successfully.`);
-            } else if (status === 'error') {
-                message.error(`${info.file.name} file upload failed.`);
-            }
+        }]
+    }
+
+    componentDidUpdate(prevProps){
+        if(prevProps.usuarios !== this.props.usuarios){
+            this.setState({ selectedUser: this.props.usuarios.find(u => u.username === getUserInfo().username) })
+        }
+    }
+
+    rowSelection = {
+        onChange: (selectedRowKeys, selectedRows) => {
+            this.setState({ asociarA: selectedRows.map(u => u._id) })
         },
+        getCheckboxProps: record => ({
+            disabled: record.name === 'Disabled User', // Column configuration not to be checked
+            name: record.name,
+        }),
     };
+
+    desvincularArchivo = async (file, user) => {
+        const docId = this.state.selectedUser.documentos.find(d => d.archivo._id === file._id)._id
+        const documento = await request("/documentos/" + docId)
+        const users = documento.users.filter(u => u._id !== user._id)
+        request("/documentos/" + docId, {
+            method: "PUT",
+            body: { users }
+        }).then(data => {
+            message.info("El archivo se desvinculó correctamente")
+        }).catch(err => {
+            console.log(err)
+            message.error("Se produjo un error durante la desvinculación del documento")
+        })
+    }
+
+    borrarArchivo = async file => {
+        const docId = this.state.selectedUser.documentos.find(d => d.archivo._id === file._id)._id
+        request("/upload/files/" + file._id, {
+            method: "DELETE"
+        }).then(data => {
+            request("/documentos/" + docId, {
+                method: "DELETE"
+            }).then(data => {
+                message.info("El archivo se borró correctamente")
+            }).catch(err => {
+                console.log(err)
+                message.error("Se produjo un error durante el borrado del documento")
+            })
+        })
+          .catch(err => {
+            console.log(err)
+            message.error("Se produjo un error durante el borrado del documento")
+        })
+    }
+
+    handleUpload = async () => {
+        try{
+            const promisingPromises = this.state.fileList.map(async file => {
+                console.log()
+                const doc = await request("/documentos", { method: "POST" })
+                const body = new FormData();
+                body.append("ref", "documento");
+                body.append("refId", doc._id);
+                body.append("field", "archivo");
+                body.append("files", file);
+                request("/upload", {
+                    method: "POST",
+                    headers: {"Authorization": "Bearer " + getToken()},
+                    body
+                }, false)
+                return doc._id
+            })
+            const arrayArchivos = await Promise.all(promisingPromises)
+            console.log(arrayArchivos)
+            if(this.state.asociarA.length === 0){
+                message.error("El documento no está asociado a ningún usuario")
+            }
+            else{
+                const promesitas = this.state.asociarA.map(userId => 
+                    request("/users/" + userId, {
+                        method: "PUT",
+                        body: {
+                            documentos: arrayArchivos
+                        }
+                    })
+                )
+                Promise.all(promesitas).then(() => {
+                    message.info("Los documentos se han subido correctamente")
+                    this.setState({
+                        mostrarListaUsuarios: false,
+                        fileList: []
+                    })
+                })
+            }
+        }
+        catch(err){
+            console.log(err)
+            message.error("Ocurrió un error durante la subida de documentos")
+        }
+
+    }
 
     render(){
         return(
             <Layout style={{height:"100vh"}}>
                 <Frame>
                     <h1>Documentos</h1>
-                    <h2>Subir archivo</h2>
-                    <Upload.Dragger {...this.props}>
-                        <Icon type="inbox" />
-                        <p>Arrastra documentos aquí</p>
-                    </Upload.Dragger>
+                    { this.state.userInfo.manager && [ 
+                        <div key="sa" style={{ marginBottom: 50 }}>
+                            <h2>Subir archivo</h2>
+                            <div style={{ width: "320px" }}>
+                                <Upload.Dragger 
+                                    name='file'
+                                    action={ process.env.REACT_APP_API_URL + '/upload' }
+                                    multiple={true}
+                                    onChange={(info) => {
+                                        const status = info.file.status;
+                                        if (status !== 'uploading') {
+                                            //console.log(info.file, info.fileList);
+                                            if(info.fileList.length === 0){
+                                                this.setState({ mostrarListaUsuarios: false })
+                                            }
+                                        }
+                                        if (status === 'done') {
+                                            message.success(`${info.file.name} se ha subido correctamente.`);
+                                        } else if (status === 'error') {
+                                            message.error(`La subida de ${info.file.name} falló.`);
+                                        }
+                                    }} 
+                                    beforeUpload={(file, fileList) => {
+                                        this.setState({ 
+                                            fileList,
+                                            mostrarListaUsuarios: true 
+                                        })
+                                        return false
+                                    }}
+                                    fileList={this.state.fileList}
+                                    onRemove={file => {
+                                        const fileList = this.state.fileList.filter(f => f.uid !== file.uid)
+                                        this.setState({ fileList, mostrarListaUsuarios: fileList.length > 0 ? true : false })
+                                    }}
+                                >
+                                    <Icon type="inbox" />
+                                    <p>Arrastra documentos aquí</p>
+                                </Upload.Dragger>
+                            </div>
+                            { this.state.mostrarListaUsuarios &&
+                                <div>
+                                    Asociar archivo a:
+                                    <Table rowSelection={this.rowSelection} dataSource={this.props.usuarios} columns={[...this.state.columns]} />
+                                    <Button onClick={this.handleUpload}>Subir documentos</Button>
+                                </div>
+                            }
+                        </div>,
+                        <div key="apu">
+                            <h2>Archivos por usuario</h2>
+                            <Select
+                                showSearch
+                                style={{ width: 200, marginBottom: 20 }}
+                                placeholder="Selecciona un usuario"
+                                defaultValue={getUserInfo().username}
+                                optionFilterProp="children"
+                                onChange={op => {
+                                    const selectedUser = this.props.usuarios.find(u => u.username === op)
+                                    this.setState({ selectedUser })
+
+                                }}
+                                filterOption={(input, option) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                            >
+                                { this.props.usuarios.map(u => 
+                                    <Select.Option value={u.username} key={u._id}>{u.username}</Select.Option>
+                                )}
+                            </Select>
+                            {
+                                this.state.selectedUser && 
+                                    <Table 
+                                        dataSource={this.state.selectedUser.documentos.map(d => d.archivo)} 
+                                        columns={this.state.misArchColumns}
+                                    ></Table>
+                            }
+                        </div>
+                    ]}
+                    { !this.state.userInfo.manager &&
+                        <div>
+                            <h2>Mis archivos</h2>
+                        </div>
+                    }
                 </Frame>
             </Layout>
         )
     }
 }
 
-export default Documentos
+const mapStateToProps = state => {
+    return {
+        usuarios: state.usuarios
+    }
+}
+
+export default connect(mapStateToProps)(Documentos)

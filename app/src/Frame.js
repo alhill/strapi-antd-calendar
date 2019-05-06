@@ -36,7 +36,6 @@ class Frame extends Component{
                 this.props.dispatch(fetchES())
             }
         });
-
         this.setState({ user })
     }
     
@@ -64,17 +63,22 @@ class Frame extends Component{
             </Header>,
             <Layout key="layout">
                 <Sider style={{ backgroundColor: "#191919" }}>
-                    <Menu theme="dark" style={{ backgroundColor: "#191919" }} mode="vertical-left">
-                        <Menu.Item><Link to="/calendario">Calendario</Link></Menu.Item>
-                        <Menu.Item><Link to="/documentos">Documentos</Link></Menu.Item>
-                        <Menu.Item><Link to="/registro">Registro E/S</Link></Menu.Item>
-                        <Menu.Item style={{display: (user && user.manager) ? "flex" : "none"}}>
+                    <Menu 
+                        theme="dark" 
+                        style={{ backgroundColor: "#191919" }} 
+                        mode="vertical-left"
+                        selectedKeys={[window.location.pathname]}
+                    >
+                        <Menu.Item key="/calendario"><Link to="/calendario">Calendario</Link></Menu.Item>
+                        <Menu.Item key="/documentos"><Link to="/documentos">Documentos</Link></Menu.Item>
+                        <Menu.Item key="/registro"><Link to="/registro">Registro E/S</Link></Menu.Item>
+                        <Menu.Item key="/usuarios" style={{display: (user && user.manager) ? "flex" : "none"}}>
                             {/*<Badge count={this.state.userNotif}>*/}
                                 <Link to="/usuarios">Usuarios</Link>
                             {/*</Badge>*/}
                         </Menu.Item>
-                        <Menu.Item style={{display: (user && user.manager) ? "flex" : "none"}}><Link to="/analitica">Analítica</Link></Menu.Item>
-                        <Menu.Item style={{display: (user && user.manager) ? "flex" : "none"}}><Link to="/configuracion">Configuración</Link></Menu.Item>
+                        <Menu.Item key="/analitica" style={{display: (user && user.manager) ? "flex" : "none"}}><Link to="/analitica">Analítica</Link></Menu.Item>
+                        <Menu.Item key="/configuracion" style={{display: (user && user.manager) ? "flex" : "none"}}><Link to="/configuracion">Configuración</Link></Menu.Item>
                     </Menu>
                 </Sider>
                 <Layout>
