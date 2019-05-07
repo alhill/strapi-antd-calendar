@@ -1,10 +1,17 @@
 import { 
-    CARGAR_USUARIOS, CARGAR_CALENDARIO, CARGAR_ES
+    CARGAR_USUARIOS, CARGAR_CALENDARIO, CARGAR_ES, CARGAR_DOCUMENTOS, CAMBIAR_BLUE_COLLAR
 } from "../constants/action-types"
 import request from "../utils/request"
 import gql from "../utils/gql"
 import { getUserInfo } from '../utils/auth'
 import { queryCalendario, queryES } from '../queries'
+
+export function cambiarBlueCollar(payload) {
+    return {
+        type: CAMBIAR_BLUE_COLLAR,
+        payload
+    }
+}
 
 export function cargarUsuarios(payload) {
     return {
@@ -54,6 +61,24 @@ export const fetchES = () => {
     return (dispatch) => {
         return request(gql(queryES(getUserInfo()))).then(response => {
             dispatch(cargarES(response.data.equipo && response.data.equipo.users))
+        })
+        .catch(error => {
+            throw(error);
+        });
+    };
+};
+
+export function cargarDocumentos(payload) {
+    return {
+        type: CARGAR_DOCUMENTOS,
+        payload
+    }
+}
+  
+export const fetchDocumentos = () => {
+    return (dispatch) => {
+        return request("/documentos").then(response => {
+            dispatch(cargarDocumentos(response))
         })
         .catch(error => {
             throw(error);

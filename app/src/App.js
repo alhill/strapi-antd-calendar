@@ -22,7 +22,7 @@ import Configuracion from './Configuracion';
 import { Provider } from 'react-redux';
 import { getUserInfo } from './utils/auth'
 import store from './store';
-import { fetchCalendario, fetchUsuarios, fetchES } from './actions'
+import { fetchCalendario, fetchUsuarios, fetchES, fetchDocumentos } from './actions'
 moment.locale('es');
 
 const socket = io.connect(process.env.REACT_APP_API_URL);
@@ -34,6 +34,7 @@ class App extends Component {
       store.dispatch(fetchUsuarios())
       store.dispatch(fetchCalendario())
       store.dispatch(fetchES())
+      store.dispatch(fetchDocumentos())
     }
   }
   render() {

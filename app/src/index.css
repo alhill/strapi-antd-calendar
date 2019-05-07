@@ -2,3 +2,19 @@ h1{
     font-size: 2em;
     font-weight: bold;
 }
+
+.sinCabecera .ant-collapse-header{
+    display: none;
+}
+
+.sinCabecera .ant-collapse-item, .sinCabecera.ant-collapse-borderless > .ant-collapse-item{
+    border: none;
+}
+
+.sinCabecera.ant-collapse, .sinCabecera.ant-collapse-borderless{
+    background-color: transparent;
+}
+
+.sinCabecera .ant-collapse-content > .ant-collapse-content-box{
+    padding: 0;
+}

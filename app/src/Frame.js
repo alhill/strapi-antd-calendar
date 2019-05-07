@@ -4,7 +4,7 @@ import { Link, withRouter } from 'react-router-dom'
 import { getUserInfo, clearData, getAvatar } from './utils/auth';
 import { socketConnect } from 'socket.io-react';
 import { connect } from 'react-redux';
-import { fetchES } from './actions';
+import { fetchES, cambiarBlueCollar } from './actions';
 import PrivateComponent from './PrivateComponent';
 
 const { Header, Footer, Sider, Content } = Layout;
@@ -50,15 +50,21 @@ class Frame extends Component{
                 <Menu.Item onClick={this.cerrarSesion}>
                     <span>Cerrar sesión</span>
                 </Menu.Item>
+                {(user && user.manager) && 
+                    <Menu.Item onClick={() => this.props.dispatch(cambiarBlueCollar(!this.props.blueCollar))}>
+                        <span>{ this.props.blueCollar ? "Modo Manager" : "Modo Blue Collar" }</span>
+                    </Menu.Item>
+                }
             </Menu>
         );
+
         return [
             <Header key="header" style={{ backgroundColor: "black", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <Title style={{ color: "#f0f0f0", margin: "0.25em", display: "flex", alignItems: "center" }}>
                     <img src={process.env.REACT_APP_API_URL + "/logo.png"} alt="Blacknosaur Logo" style={{ filter: "invert(1)", height: 45, marginRight: 20 }} /> Portal del Blacknosaurio
                 </Title>
                 <Dropdown overlay={menuAvatar}>
-                    <Avatar src={(user && user.avatar) && (process.env.REACT_APP_API_URL + user.avatar.url)}>{ user && user.username[0].toUpperCase() }</Avatar>
+                    <Avatar style={{ boxShadow: this.props.blueCollar ? "inset 0 0 4px 1px blue" : "none" }} src={(user && user.avatar) && (process.env.REACT_APP_API_URL + user.avatar.url)}>{ user && user.username[0].toUpperCase() }</Avatar>
                 </Dropdown>
             </Header>,
             <Layout key="layout">
@@ -72,13 +78,13 @@ class Frame extends Component{
                         <Menu.Item key="/calendario"><Link to="/calendario">Calendario</Link></Menu.Item>
                         <Menu.Item key="/documentos"><Link to="/documentos">Documentos</Link></Menu.Item>
                         <Menu.Item key="/registro"><Link to="/registro">Registro E/S</Link></Menu.Item>
-                        <Menu.Item key="/usuarios" style={{display: (user && user.manager) ? "flex" : "none"}}>
+                        <Menu.Item key="/usuarios" style={{display: (user && (user.manager && !this.props.blueCollar)) ? "flex" : "none"}}>
                             {/*<Badge count={this.state.userNotif}>*/}
                                 <Link to="/usuarios">Usuarios</Link>
                             {/*</Badge>*/}
                         </Menu.Item>
-                        <Menu.Item key="/analitica" style={{display: (user && user.manager) ? "flex" : "none"}}><Link to="/analitica">Analítica</Link></Menu.Item>
-                        <Menu.Item key="/configuracion" style={{display: (user && user.manager) ? "flex" : "none"}}><Link to="/configuracion">Configuración</Link></Menu.Item>
+                        <Menu.Item key="/analitica" style={{display: (user && (user.manager && !this.props.blueCollar)) ? "flex" : "none"}}><Link to="/analitica">Analítica</Link></Menu.Item>
+                        <Menu.Item key="/configuracion" style={{display: (user && (user.manager && !this.props.blueCollar)) ? "flex" : "none"}}><Link to="/configuracion">Configuración</Link></Menu.Item>
                     </Menu>
                 </Sider>
                 <Layout>
@@ -94,4 +100,10 @@ class Frame extends Component{
     }
 }
 
-export default socketConnect(connect()(withRouter(Frame)))
+const mapStateToProps = state => {
+    return {
+        blueCollar: state.blueCollar,
+    }
+}
+
+export default socketConnect(connect(mapStateToProps)(withRouter(Frame)))
