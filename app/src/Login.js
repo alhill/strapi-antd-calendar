@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
+import Frame from './Frame'
 import { Form, Icon, Input, Button, Layout, Card, Row, Col, message } from 'antd';
-import { saveAuthData } from './utils/auth';
+import { saveAuthData, getToken } from './utils/auth';
 import { connect } from 'react-redux'
 import { fetchCalendario, fetchUsuarios, fetchES } from './actions'
 
@@ -18,6 +19,7 @@ class Login extends Component{
     componentDidMount() {
         // To disabled submit button at the beginning.
         this.props.form.validateFields();
+        if(getToken()){ this.props.history.push("/") }
     }
     
     handleSubmit = (e) => {
@@ -62,55 +64,57 @@ class Login extends Component{
 
         return (
             <Layout style={{ height: "100vh"}}>
-                <Layout.Content style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-                    <Card style={{ width: 450, maxWidth: "90%" }}>
-                        <Form onSubmit={this.handleSubmit}>
-                            <Form.Item
-                                validateStatus={( userNameError || this.state.error ) ? 'error' : ''}
-                                help={userNameError || ''}
-                                >
-                                { getFieldDecorator('userName', { rules: [{ required: true, message: 'Introduce tu nombre de usuario' }] })(
-                                    <Input 
-                                    onChange={e => this.setState({ user: e.target.value })}
-                                    prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />} 
-                                    placeholder="Nombre de usuario" 
-                                    />
-                                )}
-                            </Form.Item>
-                            <Form.Item
-                                validateStatus={( passwordError || this.state.error ) ? 'error' : ''}
-                                help={passwordError || ''}
-                                >
-                                { getFieldDecorator('password', { rules: [{ required: true, message: 'Introduce tu contraseña' }] })(
-                                    <Input 
-                                        onChange={e => this.setState({ pw: e.target.value })} 
-                                        prefix={<Icon type="lock" style={{ color: 'rgba(0,0,0,.25)' }} />} 
-                                        type="password" 
-                                        placeholder="Contraseña" 
-                                    />
-                                )}
-                            </Form.Item>
-                            <Form.Item>
-                                <Row>
-                                    <Col span={12} style={{ justifyContent: "center", display: "flex" }}>
-                                        <Button type="primary" onClick={() => this.props.history.push("/register")}>
-                                            Registrarse
-                                        </Button>
-                                    </Col>
-                                    <Col span={12} style={{ justifyContent: "center", display: "flex" }}>
-                                        <Button
-                                            type="primary"
-                                            htmlType="submit"
-                                            disabled={hasErrors(getFieldsError())}
-                                            >
-                                            Acceder
-                                        </Button>
-                                    </Col>
-                                </Row>
-                            </Form.Item>
-                        </Form>
-                    </Card>
-                </Layout.Content>
+                <Frame isLogged={ getToken() ? true : false }>
+                    <Layout.Content style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+                        <Card style={{ width: 450, maxWidth: "90%" }}>
+                            <Form onSubmit={this.handleSubmit}>
+                                <Form.Item
+                                    validateStatus={( userNameError || this.state.error ) ? 'error' : ''}
+                                    help={userNameError || ''}
+                                    >
+                                    { getFieldDecorator('userName', { rules: [{ required: true, message: 'Introduce tu nombre de usuario' }] })(
+                                        <Input 
+                                        onChange={e => this.setState({ user: e.target.value })}
+                                        prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />} 
+                                        placeholder="Nombre de usuario" 
+                                        />
+                                    )}
+                                </Form.Item>
+                                <Form.Item
+                                    validateStatus={( passwordError || this.state.error ) ? 'error' : ''}
+                                    help={passwordError || ''}
+                                    >
+                                    { getFieldDecorator('password', { rules: [{ required: true, message: 'Introduce tu contraseña' }] })(
+                                        <Input 
+                                            onChange={e => this.setState({ pw: e.target.value })} 
+                                            prefix={<Icon type="lock" style={{ color: 'rgba(0,0,0,.25)' }} />} 
+                                            type="password" 
+                                            placeholder="Contraseña" 
+                                        />
+                                    )}
+                                </Form.Item>
+                                <Form.Item>
+                                    <Row>
+                                        <Col span={12} style={{ justifyContent: "center", display: "flex" }}>
+                                            <Button type="primary" onClick={() => this.props.history.push("/register")}>
+                                                Registrarse
+                                            </Button>
+                                        </Col>
+                                        <Col span={12} style={{ justifyContent: "center", display: "flex" }}>
+                                            <Button
+                                                type="primary"
+                                                htmlType="submit"
+                                                disabled={hasErrors(getFieldsError())}
+                                                >
+                                                Acceder
+                                            </Button>
+                                        </Col>
+                                    </Row>
+                                </Form.Item>
+                            </Form>
+                        </Card>
+                    </Layout.Content>
+                </Frame>
             </Layout>
         )
     }

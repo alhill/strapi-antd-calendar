@@ -4,16 +4,16 @@ import { Layout } from 'antd'
 import Frame from './Frame';
 
 
-class Home extends Component{
+class Perfil extends Component{
     render(){
         return(
             <Layout style={{height:"100vh"}}>
                 <Frame isLogged={ getToken() ? true : false }>
-                    <h1>Home</h1>
+                    <h1>Perfil</h1>
                 </Frame>
             </Layout>
         )
     }
 }
 
-export default Home
+export default Perfil

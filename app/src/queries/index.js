@@ -5,6 +5,7 @@ export function queryCalendario(variables){
         fecha
         tipo
         aprobado
+        nombre
         user{
             _id
             username
@@ -30,6 +31,10 @@ export function queryES(variables){
                 fecha
                 idcard
                 user{
+                    _id
+                    username
+                }
+                ultimoEditor{
                     _id
                     username
                 }

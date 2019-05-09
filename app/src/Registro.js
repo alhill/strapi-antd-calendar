@@ -4,7 +4,7 @@ import Frame from './Frame';
 import { connect } from 'react-redux';
 import { socketConnect } from 'socket.io-react';
 import moment from 'moment';
-import { getUserInfo } from './utils/auth';
+import { getUserInfo, getToken } from './utils/auth';
 import { wrap } from 'module';
 
 class Registro extends Component{
@@ -55,17 +55,19 @@ class Registro extends Component{
         }
     }
 
-    diasLaborables = (month = moment().month() + 1, year = moment().year()) => (
-        Array(moment().month(month - 1).year(year).daysInMonth()).fill(null).filter((e, i) => {
+    diasLaborables = (userId, month = moment().month() + 1, year = moment().year()) => {
+        const diasFestivos = (this.props.dias.filter(d => d.tipo === "festivo")).length
+        const diasLibres = (this.props.dias.filter(d => d.user && d.user._id === userId)).length
+        return Array(moment().month(month - 1).year(year).daysInMonth()).fill(null).filter((e, i) => {
             return moment().year(year).month(month - 1).date(i+1).weekday() <= 4
-        }).length
-    )
+        }).length - diasLibres - diasFestivos
+    }
 
     procesaES = (month = moment().month() + 1, year = moment().year()) => {
         const duracionJornada = 8
-        const diasLaborables = this.diasLaborables(month, year)
         const diasDeEseMes = moment().month(month - 1).year(year).daysInMonth()
         const usuarios = this.props.es.map(u => {
+            const diasLaborables = this.diasLaborables(u._id, month, year)
             const dias = Array(diasDeEseMes).fill(null)
                 .map((e, i) => moment().subtract(i, "days").format("YYYY-MM-DD"))
                 .map(d => u.registros.filter(r => moment(r.fecha).isSame(moment(d), "days")))
@@ -116,7 +118,7 @@ class Registro extends Component{
     render(){
         return(
             <Layout style={{height:"100vh"}}>
-                <Frame>
+                <Frame isLogged={ getToken() ? true : false }>
                     <h1>Jornadas</h1>
                         <Collapse>
                         {
@@ -149,6 +151,7 @@ class Registro extends Component{
 const mapStateToProps = state => {
     return {
         es: state.es,
+        dias: state.dias,
         blueCollar: state.blueCollar
     }
 }

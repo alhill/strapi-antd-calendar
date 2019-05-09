@@ -37,8 +37,6 @@ class Documentos extends Component{
             key: 'name',
         }, {
             key: "archivo",
-            rowKey: "_id",
-            key: "_id",
             render: file => (
                 <div key={file._id} style={{ display: "flex", justifyContent: "flex-end" }}>
                     <a href={process.env.REACT_APP_API_URL + file.url} target="_blank" rel="noopener noreferrer">
@@ -65,8 +63,6 @@ class Documentos extends Component{
             key: 'name',
         }, {
             key: "archivo",
-            rowKey: "_id",
-            key: "_id",
             render: file => (
                 <div key={file._id} style={{ display: "flex", justifyContent: "flex-end" }}>
                     <a href={process.env.REACT_APP_API_URL + file.url} target="_blank" rel="noopener noreferrer">
@@ -88,8 +84,6 @@ class Documentos extends Component{
             key: 'name',
         }, {
             key: "archivo",
-            rowKey: "_id",
-            key: "_id",
             render: file => (
                 <div key={file._id} style={{ display: "flex", justifyContent: "flex-end" }}>
                     <a href={process.env.REACT_APP_API_URL + file.url} target="_blank" rel="noopener noreferrer">
@@ -216,7 +210,7 @@ class Documentos extends Component{
     render(){
         return(
             <Layout style={{height:"100vh"}}>
-                <Frame>
+                <Frame isLogged={ getToken() ? true : false }>
                     <h1>Documentos</h1>
                     {(this.state.userInfo.manager && !this.props.blueCollar ) && [ 
                         <div key="sa" style={{ marginBottom: 50 }}>
@@ -297,6 +291,7 @@ class Documentos extends Component{
                                         // dataSource={this.state.selectedUser.documentos.map(d => d.archivo)} 
                                         dataSource={this.props.documentos.filter(d => d.users.map(u => u._id).includes(this.state.selectedUser._id)).map(d => d.archivo)} 
                                         columns={this.state.misArchColumns}
+                                        rowKey="_id"
                                     ></Table>
                             }
 
@@ -304,6 +299,7 @@ class Documentos extends Component{
                             <Table 
                                 dataSource={this.props.documentos.filter(d => d.global).map(d => d.archivo)} 
                                 columns={this.state.archGlobColumns}
+                                rowKey="_id"
                             ></Table>
                         </div>
                     ]}
@@ -313,6 +309,7 @@ class Documentos extends Component{
                             <Table 
                                 dataSource={this.props.documentos.filter(d => this.state.userInfo.documentos.includes(d._id) || d.global).map(d => d.archivo)} 
                                 columns={this.state.archUserColumns}
+                                rowKey="_id"
                             ></Table>
                         </div>
                     }

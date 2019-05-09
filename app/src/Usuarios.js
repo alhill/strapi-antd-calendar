@@ -5,6 +5,7 @@ import { socketConnect } from 'socket.io-react';
 import { connect } from 'react-redux'
 import { fetchUsuarios } from './actions'
 import request from './utils/request';
+import { getToken } from './utils/auth';
 
 
 class Usuarios extends Component{
@@ -151,7 +152,7 @@ class Usuarios extends Component{
         //console.log(columns)
         return(
             <Layout style={{height:"100vh"}}>
-                <Frame>
+                <Frame isLogged={ getToken() ? true : false }>
                     <h1>Usuarios activos</h1>
                     <Table dataSource={activos} columns={[...columns, ...extraColumnsA]} />
                     <h1>Usuarios pendientes de aprobación</h1>

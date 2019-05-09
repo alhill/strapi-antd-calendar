@@ -1,8 +1,9 @@
 import React, { Component } from 'react'
 import { Form, Icon, Input, Button, Layout, Card, Row, Col, message } from 'antd';
-import { saveAuthData, getHeaders, getUserInfo } from './utils/auth';
+import { getHeaders, getUserInfo, getToken } from './utils/auth';
 import { Typography } from 'antd';
 import gql from './utils/gql';
+import Frame from './Frame';
 
 const { Title } = Typography;
 
@@ -90,60 +91,62 @@ class NuevoUsuario extends Component{
 
         return (
             <Layout style={{ height: "100vh"}}>
-                <Layout.Content style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
-                    <Form onSubmit={this.handleSubmit}>
-                        <Card style={{ width: 450, maxWidth: "90%", marginBottom: "1em" }}>
-                            <Title level={2}>Unirse a un equipo</Title>
-                            <Form.Item
-                                validateStatus={( unirseError || this.state.errorUnirse ) ? 'error' : ''}
-                                help={unirseError || ''}
-                                >
-                                { getFieldDecorator('unirse', { rules: [{ required: true, message: 'Introduce el nombre del equipo' }] })(
-                                    <Input 
-                                        onChange={e => this.setState({ pw: e.target.value })} 
-                                        prefix={<Icon type="team" style={{ color: 'rgba(0,0,0,.25)' }} />} 
-                                        type="text" 
-                                        placeholder="Nombre del equipo al que te quieres unir" 
-                                    />
-                                )}
-                            </Form.Item>
-                            <Form.Item>
-                                <Row>
-                                    <Col style={{ justifyContent: "center", display: "flex" }}>
-                                        <Button type="primary" onClick={this.solicitarAcceso}>
-                                            Solicitar acceso
-                                        </Button>
-                                    </Col>
-                                </Row>
-                            </Form.Item>
-                        </Card>
-                        <Card style={{ width: 450, maxWidth: "90%" }}>
-                            <Title level={2}>Crear un equipo</Title>
-                            <Form.Item
-                                validateStatus={( crearError || this.state.errorCrear ) ? 'error' : ''}
-                                help={crearError || ''}
-                                >
-                                { getFieldDecorator('crear', { rules: [{ required: true, message: 'Introduce el nombre del equipo' }] })(
-                                    <Input 
-                                        onChange={e => this.setState({ pw: e.target.value })} 
-                                        prefix={<Icon type="usergroup-add" style={{ color: 'rgba(0,0,0,.25)' }} />} 
-                                        type="password" 
-                                        placeholder="Nombre del equipo a crear" 
-                                    />
-                                )}
-                            </Form.Item>
-                            <Form.Item>
-                                <Row>
-                                    <Col style={{ justifyContent: "center", display: "flex" }}>
-                                        <Button type="primary" onClick={this.crearEquipo}>
-                                            Crear equipo
-                                        </Button>
-                                    </Col>
-                                </Row>
-                            </Form.Item>
-                        </Card>
-                    </Form>
-                </Layout.Content>
+                <Frame isLogged={ getToken() ? true : false }>
+                    <Layout.Content style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+                        <Form onSubmit={this.handleSubmit}>
+                            <Card style={{ width: 450, maxWidth: "90%", marginBottom: "1em" }}>
+                                <Title level={2}>Unirse a un equipo</Title>
+                                <Form.Item
+                                    validateStatus={( unirseError || this.state.errorUnirse ) ? 'error' : ''}
+                                    help={unirseError || ''}
+                                    >
+                                    { getFieldDecorator('unirse', { rules: [{ required: true, message: 'Introduce el nombre del equipo' }] })(
+                                        <Input 
+                                            onChange={e => this.setState({ pw: e.target.value })} 
+                                            prefix={<Icon type="team" style={{ color: 'rgba(0,0,0,.25)' }} />} 
+                                            type="text" 
+                                            placeholder="Nombre del equipo al que te quieres unir" 
+                                        />
+                                    )}
+                                </Form.Item>
+                                <Form.Item>
+                                    <Row>
+                                        <Col style={{ justifyContent: "center", display: "flex" }}>
+                                            <Button type="primary" onClick={this.solicitarAcceso}>
+                                                Solicitar acceso
+                                            </Button>
+                                        </Col>
+                                    </Row>
+                                </Form.Item>
+                            </Card>
+                            <Card style={{ width: 450, maxWidth: "90%" }}>
+                                <Title level={2}>Crear un equipo</Title>
+                                <Form.Item
+                                    validateStatus={( crearError || this.state.errorCrear ) ? 'error' : ''}
+                                    help={crearError || ''}
+                                    >
+                                    { getFieldDecorator('crear', { rules: [{ required: true, message: 'Introduce el nombre del equipo' }] })(
+                                        <Input 
+                                            onChange={e => this.setState({ pw: e.target.value })} 
+                                            prefix={<Icon type="usergroup-add" style={{ color: 'rgba(0,0,0,.25)' }} />} 
+                                            type="password" 
+                                            placeholder="Nombre del equipo a crear" 
+                                        />
+                                    )}
+                                </Form.Item>
+                                <Form.Item>
+                                    <Row>
+                                        <Col style={{ justifyContent: "center", display: "flex" }}>
+                                            <Button type="primary" onClick={this.crearEquipo}>
+                                                Crear equipo
+                                            </Button>
+                                        </Col>
+                                    </Row>
+                                </Form.Item>
+                            </Card>
+                        </Form>
+                    </Layout.Content>
+                </Frame>
             </Layout>
         )
     }

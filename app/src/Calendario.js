@@ -1,14 +1,12 @@
 import React, { Component } from 'react'
 import { Layout, Typography, Calendar, Modal, message, Avatar, Button, Popover, Radio, Row, Table, Popconfirm, Tag } from 'antd'
 import moment from 'moment';
-import { getHeaders, getUserInfo } from './utils/auth';
-import gql from './utils/gql';
+import { getHeaders, getUserInfo, getToken } from './utils/auth';
 import request from './utils/request';
 import Frame from './Frame';
 import PrivateComponent from './PrivateComponent';
 import { connect } from 'react-redux'
 import { fetchCalendario } from './actions';
-const { Title, Paragraph } = Typography;
 
 const query = getUserInfo() ? `{
     dias(where: { equipo: "${getUserInfo().equipo }" }){
@@ -174,7 +172,7 @@ class Calendario extends Component{
     render(){
         return(
             <Layout style={{height:"100vh"}}>
-                <Frame>
+                <Frame isLogged={ getToken() ? true : false }>
                     <Row style={{ justifyContent: "space-around", display: "flex"}}>
                         <Radio.Group defaultValue={this.state.sel1} buttonStyle="solid">
                             <Radio.Button onClick={() => this.setState({ sel1: "libres" }) } value="libres">Libres</Radio.Button>

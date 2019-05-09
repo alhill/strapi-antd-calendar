@@ -29,6 +29,7 @@ class Frame extends Component{
     async componentDidMount(){
         const user = getUserInfo()
         this.props.socket.on('notification', msg => {
+            console.log(msg)
             if(user.equipo === msg.equipo && user.manager === true){
                 this.setState({ userNotif: this.state.userNotif + 1 })
             }
@@ -42,6 +43,7 @@ class Frame extends Component{
 
     render(){
         const { user } = this.state
+        const { isLogged } = this.props
         const menuAvatar = (
             <Menu>
                 <Menu.Item>
@@ -63,30 +65,34 @@ class Frame extends Component{
                 <Title style={{ color: "#f0f0f0", margin: "0.25em", display: "flex", alignItems: "center" }}>
                     <img src={process.env.REACT_APP_API_URL + "/logo.png"} alt="Blacknosaur Logo" style={{ filter: "invert(1)", height: 45, marginRight: 20 }} /> Portal del Blacknosaurio
                 </Title>
-                <Dropdown overlay={menuAvatar}>
-                    <Avatar style={{ boxShadow: this.props.blueCollar ? "inset 0 0 4px 1px blue" : "none" }} src={(user && user.avatar) && (process.env.REACT_APP_API_URL + user.avatar.url)}>{ user && user.username[0].toUpperCase() }</Avatar>
-                </Dropdown>
+                { isLogged &&
+                    <Dropdown overlay={menuAvatar}>
+                        <Avatar style={{ boxShadow: this.props.blueCollar ? "inset 0 0 4px 1px blue" : "none" }} src={(user && user.avatar) && (process.env.REACT_APP_API_URL + user.avatar.url)}>{ user && user.username[0].toUpperCase() }</Avatar>
+                    </Dropdown>
+                }
             </Header>,
             <Layout key="layout">
-                <Sider style={{ backgroundColor: "#191919" }}>
-                    <Menu 
-                        theme="dark" 
-                        style={{ backgroundColor: "#191919" }} 
-                        mode="vertical-left"
-                        selectedKeys={[window.location.pathname]}
-                    >
-                        <Menu.Item key="/calendario"><Link to="/calendario">Calendario</Link></Menu.Item>
-                        <Menu.Item key="/documentos"><Link to="/documentos">Documentos</Link></Menu.Item>
-                        <Menu.Item key="/registro"><Link to="/registro">Registro E/S</Link></Menu.Item>
-                        <Menu.Item key="/usuarios" style={{display: (user && (user.manager && !this.props.blueCollar)) ? "flex" : "none"}}>
-                            {/*<Badge count={this.state.userNotif}>*/}
-                                <Link to="/usuarios">Usuarios</Link>
-                            {/*</Badge>*/}
-                        </Menu.Item>
-                        <Menu.Item key="/analitica" style={{display: (user && (user.manager && !this.props.blueCollar)) ? "flex" : "none"}}><Link to="/analitica">Analítica</Link></Menu.Item>
-                        <Menu.Item key="/configuracion" style={{display: (user && (user.manager && !this.props.blueCollar)) ? "flex" : "none"}}><Link to="/configuracion">Configuración</Link></Menu.Item>
-                    </Menu>
-                </Sider>
+                { isLogged &&
+                    <Sider style={{ backgroundColor: "#191919" }}>
+                        <Menu 
+                            theme="dark" 
+                            style={{ backgroundColor: "#191919" }} 
+                            mode="vertical-left"
+                            selectedKeys={[window.location.pathname]}
+                        >
+                            <Menu.Item key="/calendario"><Link to="/calendario">Calendario</Link></Menu.Item>
+                            <Menu.Item key="/documentos"><Link to="/documentos">Documentos</Link></Menu.Item>
+                            <Menu.Item key="/registro"><Link to="/registro">Registro E/S</Link></Menu.Item>
+                            <Menu.Item key="/usuarios" style={{display: (user && (user.manager && !this.props.blueCollar)) ? "flex" : "none"}}>
+                                {/*<Badge count={this.state.userNotif}>*/}
+                                    <Link to="/usuarios">Usuarios</Link>
+                                {/*</Badge>*/}
+                            </Menu.Item>
+                            <Menu.Item key="/analitica" style={{display: (user && (user.manager && !this.props.blueCollar)) ? "flex" : "none"}}><Link to="/analitica">Analítica</Link></Menu.Item>
+                            <Menu.Item key="/configuracion" style={{display: (user && (user.manager && !this.props.blueCollar)) ? "flex" : "none"}}><Link to="/configuracion">Configuración</Link></Menu.Item>
+                        </Menu>
+                    </Sider>
+                }
                 <Layout>
                     <Content style={{ padding: "2em", overflowY: "auto" }}>
                         { this.props.children }
