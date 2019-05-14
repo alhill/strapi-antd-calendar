@@ -30,6 +30,8 @@ class Calendario extends Component{
         dias: [],
         diasFilter: [],
         diasPorAprobar: [],
+        festivos: [],
+        festivosArrUTC: [],
         sel1: "libres",
         sel2: "global"
     }
@@ -47,7 +49,7 @@ class Calendario extends Component{
         }, {
             title: 'Fecha',
             key: 'fecha',
-            render: fecha => moment(fecha).format("YYYY-MM-DD")
+            render: row => moment(row.fecha).format("YYYY-MM-DD")
         }, {
             title: 'Acción',
             key: 'action',
@@ -63,6 +65,9 @@ class Calendario extends Component{
             ),
         }]
         this.setState({ columns })
+        if(this.props.dias){
+            this.organizarDias()
+        }
     }
 
     componentDidUpdate(prevProps, prevState){
@@ -81,7 +86,18 @@ class Calendario extends Component{
 
     organizarDias = () => {
         const { dias } = this.props
-        this.setState({ dias, diasFilter: this.filtrarDias(dias), diasPorAprobar:dias.filter(d => !d.aprobado).map(d => ({...d, key: d._id})) })
+        const festivos = this.props.dias.filter(d => d.tipo === "festivo").map(f => ({
+            ...f,
+            fecha: moment.utc(f.fecha).hour(0).minute(0).seconds(0).milliseconds(0).format()
+        }))
+        const festivosArrUTC = festivos.map(f => moment.utc(f.fecha).hour(2).minute(0).seconds(0).milliseconds(0).format())
+        this.setState({ 
+            dias, 
+            festivos,
+            festivosArrUTC,
+            diasFilter: this.filtrarDias(dias), 
+            diasPorAprobar:dias.filter(d => !d.aprobado).map(d => ({...d, key: d._id})) 
+        })
     }
    
     filtrarDias = (dias) => {
@@ -133,18 +149,35 @@ class Calendario extends Component{
         return listData || [];
     }
 
-    dateCellRender = value => {
+    dateFullCellRender = value => {
+
         const listData = this.getListData(value);
+        const valueUTC = moment.utc(value.hour(2).minute(0).seconds(0).milliseconds(0)).format()
+        
+        const festivo = this.state.festivos.find(f => { return moment.utc(f.fecha).format() === valueUTC })
+
+        const tc = {
+            title: festivo ? festivo.nombre : value.format("LL"),
+            color: festivo ? "rgba(255, 40, 30, 0.5)" : ( [0, 6].includes(value.day()) ? "rgba(255, 200, 100, 0.5)" : "transparent" )
+        }
+        
+        // const title = this.state.festivos.find(f => f.fecha === valueUTC) ? this.state.festivos.find(f => f.fecha === valueUTC).nombre : "PENE"
+        // const color = this.state.festivosArrUTC.includes(valueUTC) ? "red" : ([0, 6].includes(value.day()) ? "orange" : "transparent" )
         return (
-            <ul className="events">
-            {
-                listData.map(item => (
-                    <Popover key={item.fecha} content={<span>{item.user}</span>}>
-                        <Avatar src={item.avatar}>{ item.user[0].toUpperCase() }</Avatar>
-                    </Popover>
-                ))
-            }
-            </ul>
+            <div className="ant-fullcalendar-date" style={{ backgroundColor: tc.color, margin: "-1px 0", borderRadius: 3 }} title={tc.title}>
+                <div className="ant-fullcalendar-value">{ value.date() }</div>
+                <div className="ant-fullcalendar-content">
+                    <ul className="events">
+                    {
+                        listData.map(item => (
+                            <Popover key={item.fecha} content={<span>{item.user}</span>}>
+                                <Avatar src={item.avatar ? process.env.REACT_APP_API_URL + item.avatar : null}>{ item.user[0].toUpperCase() }</Avatar>
+                            </Popover>
+                        ))
+                    }
+                    </ul>
+                </div>
+            </div>
         );
     }
 
@@ -189,7 +222,8 @@ class Calendario extends Component{
                             dia: evt,
                             modalPedirDia: true
                         })} 
-                        dateCellRender={this.dateCellRender}
+                        dateFullCellRender={this.dateFullCellRender}
+                        style={{ margin: "-1px 0"}}
                     />
                     <PrivateComponent>
                         <h1>Días pendientes de revisión</h1>

@@ -23,7 +23,7 @@ export function cargarUsuarios(payload) {
 export const fetchUsuarios = () => {
     return (dispatch) => {
         const equipo = getUserInfo() && getUserInfo().equipo
-        return request("/users?equipo=" + equipo).then(response => {
+        return request("/users?_limit=0&equipo=" + equipo).then(response => {
             dispatch(cargarUsuarios(response))
         })
         .catch(error => {

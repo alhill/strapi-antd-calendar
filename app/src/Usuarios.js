@@ -3,6 +3,7 @@ import { Layout, Table, Tag, Popconfirm, message, Icon, Button, Modal } from 'an
 import Frame from './Frame';
 import { socketConnect } from 'socket.io-react';
 import { connect } from 'react-redux'
+import { Link } from 'react-router-dom'
 import { fetchUsuarios } from './actions'
 import request from './utils/request';
 import { getToken } from './utils/auth';
@@ -44,6 +45,13 @@ class Usuarios extends Component{
                     </div>
                     : <Button type="primary" onClick={() => this.setState({ modalAsociar: true, usuarioAsociar: record._id })}>Asociar tarjeta</Button>
             }
+        }, {
+            key: 'btn',
+            render: (text, record) => (
+                <Link to={"/usuario/" + record._id}>
+                    <Tag key={`${record._id}_denegar`}><Icon type="user" /> Editar</Tag>
+                </Link>
+            )
         }]
         const extraColumnsB = [{
             title: 'Acción',
@@ -77,7 +85,7 @@ class Usuarios extends Component{
                         request("/users/" + this.state.usuarioAsociar, {
                             method: "PUT",
                             body: {
-                                idcard: msg.es
+                                idcard: msg.es && msg.es.idcard
                             }
                         }).then(data => {
                             message.info("La tarjeta ha sido asociada correctamente")

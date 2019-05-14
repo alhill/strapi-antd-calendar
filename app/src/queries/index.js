@@ -30,6 +30,7 @@ export function queryES(variables){
                 _id
                 fecha
                 idcard
+                aprobado
                 user{
                     _id
                     username
@@ -39,6 +40,7 @@ export function queryES(variables){
                     username
                 }
             }
+            duracionjornada
         }
     }
 }` : "{}"

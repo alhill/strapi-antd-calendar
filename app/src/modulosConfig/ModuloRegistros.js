@@ -8,7 +8,8 @@ import request from '../utils/request';
 class ModuloRegistros extends Component{
 
     addRegistro = async () => {
-        if(![this.state.fechaNuevoRegistro, this.state.horaEntradaNuevoRegistro, this.state.horaSalidaNuevoRegistro, this.state.selectedUser].includes(undefined)){
+        const idUser = this.props.usuario || this.state.selectedUser._id || undefined
+        if(![this.state.fechaNuevoRegistro, this.state.horaEntradaNuevoRegistro, this.state.horaSalidaNuevoRegistro, idUser].includes(undefined)){
             const fechaEntrada = this.state.fechaNuevoRegistro.clone().hour(this.state.horaEntradaNuevoRegistro.hour()).minute(this.state.horaEntradaNuevoRegistro.minute())
             const fechaSalida = this.state.fechaNuevoRegistro.clone().hour(this.state.horaSalidaNuevoRegistro.hour()).minute(this.state.horaSalidaNuevoRegistro.minute())
 
@@ -18,14 +19,16 @@ class ModuloRegistros extends Component{
 
             if( ePasado && sPasado && eAntesDeS ){
                 const registroEntrada = {
-                    user: this.state.selectedUser._id,
+                    user: idUser,
                     fecha: moment.utc(fechaEntrada).format(),
-                    ultimoEditor: getUserInfo._id
+                    ultimoEditor: getUserInfo()._id,
+                    aprobado: getUserInfo().manager ? true : false
                 }
                 const registroSalida = {
-                    user: this.state.selectedUser._id,
+                    user: idUser,
                     fecha: moment.utc(fechaSalida).format(),
-                    ultimoEditor: getUserInfo._id
+                    ultimoEditor: getUserInfo()._id,
+                    aprobado: getUserInfo().manager ? true : false
                 }
 
                 try{
@@ -58,25 +61,27 @@ class ModuloRegistros extends Component{
         return(
             <div>
                 <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap" }}>
-                    <Form.Item label="Usuario">
-                        <Select
-                            showSearch
-                            style={{ width: 200, marginBottom: 20 }}
-                            placeholder="Selecciona un usuario"
-                            optionFilterProp="children"
-                            onChange={op => {
-                                const selectedUser = this.props.usuarios.find(u => u.username === op)
-                                this.setState({ selectedUser })
+                    {!this.props.usuario &&
+                        <Form.Item label="Usuario">
+                            <Select
+                                showSearch
+                                style={{ width: 200, marginBottom: 20 }}
+                                placeholder="Selecciona un usuario"
+                                optionFilterProp="children"
+                                onChange={op => {
+                                    const selectedUser = this.props.usuarios.find(u => u.username === op)
+                                    this.setState({ selectedUser })
 
-                            }}
-                            filterOption={(input, option) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                            style={{ width: 250 }}
-                        >
-                            { this.props.usuarios.map(u => 
-                                <Option value={u.username} key={u._id}>{u.username}</Option>
-                            )}
-                        </Select>
-                    </Form.Item>
+                                }}
+                                filterOption={(input, option) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                                style={{ width: 250 }}
+                            >
+                                { this.props.usuarios.map(u => 
+                                    <Option value={u.username} key={u._id}>{u.username}</Option>
+                                )}
+                            </Select>
+                        </Form.Item>
+                    }
                     <Form.Item label="Fecha">
                         <DatePicker onChange={fechaNuevoRegistro => this.setState({ fechaNuevoRegistro })} style={{ width: 250 }}/>
                     </Form.Item>

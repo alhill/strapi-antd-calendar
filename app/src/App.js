@@ -5,7 +5,7 @@ import Register from "./Register"
 import FourOhFour from "./FourOhFour"
 import 'antd/dist/antd.css';
 import { LocaleProvider } from 'antd';
-import esES from 'antd/lib/locale-provider/es_ES';
+import es_ES from 'antd/lib/locale-provider/es_ES';
 import moment from 'moment';
 import 'moment/locale/es';
 import { SocketProvider } from 'socket.io-react';
@@ -16,6 +16,7 @@ import Calendario from "./Calendario"
 import NuevoUsuario from './NuevoUsuario';
 import Documentos from './Documentos';
 import Usuarios from './Usuarios';
+import EditUsuario from './EditUsuario';
 import Analitica from './Analitica';
 import Registro from './Registro';
 import Perfil from './Perfil';
@@ -24,9 +25,12 @@ import { Provider } from 'react-redux';
 import { getUserInfo } from './utils/auth'
 import store from './store';
 import { fetchCalendario, fetchUsuarios, fetchES, fetchDocumentos } from './actions'
+
 moment.locale('es');
 
-const socket = io.connect(process.env.REACT_APP_API_URL);
+const socket = io.connect(process.env.REACT_APP_API_URL, {
+  transports: [ 'websocket' ]
+});
 
 class App extends Component {
   componentDidMount(){
@@ -41,18 +45,19 @@ class App extends Component {
   render() {
     return (
       <Provider store={store}>
-        <LocaleProvider locale={esES}>
+        <LocaleProvider locale={es_ES}>
           <SocketProvider socket={socket}>
             <BrowserRouter>
               <Switch>
                 <Route exact path="/login" component={Login} />
                 <Route exact path="/register" component={Register} />
                 <PrivateRoute exact path="/calendario" component={Calendario} />
-                <PrivateRoute exact path="/documentos" component={Documentos} />
+                <PrivateRoute exact path="/archivos" component={Documentos} />
                 <PrivateRoute exact path="/perfil" component={Perfil} />
                 <PrivateRoute onlyManager={true} exact path="/usuarios" component={Usuarios} />
                 <PrivateRoute onlyManager={true} exact path="/analitica" component={Analitica} />
                 <PrivateRoute onlyManager={true} exact path="/configuracion" component={Configuracion} />
+                <PrivateRoute onlyManager={true} exact path="/usuario/:id" component={EditUsuario} />
                 <PrivateRoute exact path="/registro" component={Registro} />
                 <PrivateRoute exact path="/nuevousuario" component={NuevoUsuario} />
                 <PrivateRoute exact path="/" component={Home} />
