@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { getToken } from './utils/auth';
+import { getToken, getUserInfo } from './utils/auth';
 import { Layout, Input, Form, Radio, Button, message } from 'antd'
 import { connect } from 'react-redux'
 import request from './utils/request'
@@ -59,7 +59,7 @@ class EditUsuario extends Component{
             request("/users/" + this.state.usuario._id, {
                 method: "PUT",
                 body: {
-                    frases: this.state.frases,
+                    frases: this.state.frases.filter(f => ![undefined, null, ""].includes(f)),
                     frasePrioritaria: this.state.frasePr,
                     actFrasePrioritaria: this.state.frasePrAct,
                     manager: this.state.manager,
@@ -86,15 +86,17 @@ class EditUsuario extends Component{
             <Layout style={{height:"100vh"}}>
                 <Frame isLogged={ getToken() ? true : false }>
                     <h1>{ usuario.username }</h1>
-                    <Form.Item label="Duración media de su jornada laboral">
-                        <Input type="number" value={this.state.duracionjornada} onChange={e => this.setState({ duracionjornada: e.target.value })} />
-                    </Form.Item>
-                    <Form.Item label="Manager">
-                        <Radio.Group  value={ this.state.manager }>
-                            <Radio.Button value={true} onClick={() => this.setState({ manager: true })}>Sí</Radio.Button>
-                            <Radio.Button value={false} onClick={() => this.setState({ manager: false })}>No</Radio.Button>
-                        </Radio.Group>
-                    </Form.Item>
+                    { getUserInfo.manager && [
+                        <Form.Item key="editUserJornada" label="Duración media de su jornada laboral">
+                            <Input type="number" value={this.state.duracionjornada} onChange={e => this.setState({ duracionjornada: e.target.value })} />
+                        </Form.Item>,
+                        <Form.Item key="editUserManager" label="Manager">
+                            <Radio.Group  value={ this.state.manager }>
+                                <Radio.Button value={true} onClick={() => this.setState({ manager: true })}>Sí</Radio.Button>
+                                <Radio.Button value={false} onClick={() => this.setState({ manager: false })}>No</Radio.Button>
+                            </Radio.Group>
+                        </Form.Item>
+                    ]}
                     <Form.Item label="Frases (una por línea)">
                         <Input.TextArea rows={6} value={this.state.frasesStr} onChange={e => this.setState({ frasesStr: e.target.value })} />
                     </Form.Item>

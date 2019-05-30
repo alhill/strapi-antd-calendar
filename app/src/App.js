@@ -20,6 +20,7 @@ import EditUsuario from './EditUsuario';
 import Analitica from './Analitica';
 import Registro from './Registro';
 import Perfil from './Perfil';
+import Grupos from './Grupos';
 import Configuracion from './Configuracion';
 import { Provider } from 'react-redux';
 import { getUserInfo } from './utils/auth'
@@ -54,10 +55,11 @@ class App extends Component {
                 <PrivateRoute exact path="/calendario" component={Calendario} />
                 <PrivateRoute exact path="/archivos" component={Documentos} />
                 <PrivateRoute exact path="/perfil" component={Perfil} />
-                <PrivateRoute onlyManager={true} exact path="/usuarios" component={Usuarios} />
+                <PrivateRoute exact path="/usuarios" component={Usuarios} />
                 <PrivateRoute onlyManager={true} exact path="/analitica" component={Analitica} />
+                <PrivateRoute onlyManager={true} exact path="/grupos" component={Grupos} />
                 <PrivateRoute onlyManager={true} exact path="/configuracion" component={Configuracion} />
-                <PrivateRoute onlyManager={true} exact path="/usuario/:id" component={EditUsuario} />
+                <PrivateRoute exact path="/usuario/:id" component={EditUsuario} />
                 <PrivateRoute exact path="/registro" component={Registro} />
                 <PrivateRoute exact path="/nuevousuario" component={NuevoUsuario} />
                 <PrivateRoute exact path="/" component={Home} />

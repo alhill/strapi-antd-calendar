@@ -6,7 +6,7 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { fetchUsuarios } from './actions'
 import request from './utils/request';
-import { getToken } from './utils/auth';
+import { getToken, getUserInfo } from './utils/auth';
 
 
 class Usuarios extends Component{
@@ -14,10 +14,12 @@ class Usuarios extends Component{
     state = {
         columns: [],
         extraColumnsA: [],
+        extraColumnsA2: [],
         extraColumnsB: []
     }
 
     componentDidMount() {
+
         const columns = [{
             title: 'Nombre de usuario',
             dataIndex: 'username',
@@ -28,7 +30,7 @@ class Usuarios extends Component{
             key: 'email',
         }]
 
-        const extraColumnsA = [{
+        const extraColumnsA = getUserInfo.manager ? [{
             title: 'Manager',
             dataIndex: 'manager',
             render: bool => bool ? <Icon type="check-circle" theme="twoTone" twoToneColor="#eb2f96" twoToneColor="#52c41a"/> : <Icon type="close-circle" theme="twoTone" twoToneColor="#eb2f96"/>
@@ -45,7 +47,9 @@ class Usuarios extends Component{
                     </div>
                     : <Button type="primary" onClick={() => this.setState({ modalAsociar: true, usuarioAsociar: record._id })}>Asociar tarjeta</Button>
             }
-        }, {
+        }] : []
+        
+        const extraColumnsA2 = [{
             key: 'btn',
             render: (text, record) => (
                 <Link to={"/usuario/" + record._id}>
@@ -53,6 +57,7 @@ class Usuarios extends Component{
                 </Link>
             )
         }]
+
         const extraColumnsB = [{
             title: 'Acción',
             key: 'action',
@@ -67,7 +72,7 @@ class Usuarios extends Component{
               </span>
             ),
         }]
-        this.setState({ columns, extraColumnsA, extraColumnsB })
+        this.setState({ columns, extraColumnsA, extraColumnsA2, extraColumnsB })
         if(this.props.usuarios){
             this.filtraUsuarios(this.props.usuarios) 
         }
@@ -156,15 +161,19 @@ class Usuarios extends Component{
     }
     
     render(){
-        const { activos, pendientes, columns, extraColumnsA, extraColumnsB } = this.state
+        const { activos, pendientes, columns, extraColumnsA, extraColumnsA2, extraColumnsB } = this.state
         //console.log(columns)
         return(
             <Layout style={{height:"100vh"}}>
                 <Frame isLogged={ getToken() ? true : false }>
                     <h1>Usuarios activos</h1>
-                    <Table dataSource={activos} columns={[...columns, ...extraColumnsA]} />
-                    <h1>Usuarios pendientes de aprobación</h1>
-                    <Table dataSource={pendientes} columns={[...columns, ...extraColumnsB]} />
+                    <Table dataSource={activos} columns={[...columns, ...extraColumnsA, ...extraColumnsA2 ]} />
+                    {
+                        getUserInfo.manager && [
+                            <h1 key="pendAprobTitle">Usuarios pendientes de aprobación</h1>,
+                            <Table key="pendAprobTable" dataSource={pendientes} columns={[...columns, ...extraColumnsB]} />
+                        ]
+                    }
                 </Frame>
                 <Modal
                     visible={this.state.modalAsociar}

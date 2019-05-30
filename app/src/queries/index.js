@@ -1,6 +1,6 @@
 export function queryCalendario(variables){
     return variables.equipo ? `{
-    dias(where: { equipo: "${ variables.equipo }" }){
+    dias(where: { equipo: "${ variables.equipo }" }, limit: 10000){
         _id
         fecha
         tipo

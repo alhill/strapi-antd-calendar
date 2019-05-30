@@ -35,7 +35,13 @@ class ModuloRegistros extends Component{
                     const respEntrada = await request("/registros", { method: "POST", body: registroEntrada })
                     const respSalida = await request("/registros", { method: "POST", body: registroSalida })
                     // console.log({ respEntrada, respSalida })
-                    message.success("El registro se añadió correctamente")
+                    if( getUserInfo().manager === true ){
+                        message.success("El registro se añadió correctamente")
+                    }
+                    else {
+                        message.success("El registro se añadió correctamente, actualmente está pendiente de aprobación")
+                    }
+                    if(this.props.cerrarModal){ this.props.cerrarModal() }
                     this.setState({ 
                         fechaNuevoRegistro: undefined,
                         horaEntradaNuevoRegistro: undefined,

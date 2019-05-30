@@ -33,17 +33,17 @@ class Registro extends Component{
         sorter: (a, b) => moment(a.entrada).diff(moment(b.entrada)),
         render: hora => hora !== "-" ? moment(hora).format("YYYY-MM-DD, HH:mm") : "-"
     }, {
-        title: 'Horas trabajadas',
+        title: 'Tiempo trabajado',
         dataIndex: 'horas',
         key: 'horas',
         sorter: (a, b) => a.horas - b.horas,
-        render: horas => horas !== "-" ? horas + "h" : "-"
+        render: horas => horas !== "-" ? Math.trunc(horas, 10) + "h " + Math.round((horas % 1) * 60) + "m" : "-"
     }, {
-        title: 'Horas de descanso',
+        title: 'Tiempo de descanso',
         dataIndex: 'tiempoDescanso',
         key: 'tiempoDescanso',
         sorter: (a, b) => a.tiempoDescanso - b.tiempoDescanso,
-        render: tiempoDescanso => tiempoDescanso !== "-" ? tiempoDescanso + "h" : "-"
+        render: tiempoDescanso => tiempoDescanso !== "-" ? Math.trunc(tiempoDescanso, 10) + "h " + Math.round((tiempoDescanso % 1) * 60) + "m" : "-"
     }]
 
     componentDidMount() {
@@ -79,16 +79,20 @@ class Registro extends Component{
             const diasLaborables = this.diasLaborables(u._id, month, year)
             const dias = Array(diasDeEseMes).fill(null)
                 .map((e, i) => moment().subtract(i, "days").format("YYYY-MM-DD"))
-                .map(d => u.registros.filter(r => {
-                    //console.log(r)
-                    return moment(r.fecha).isSame(moment(d), "days") && moment(r.fecha).isSame(this.state.mes, "month")}))
+                .map(d => u.registros.filter(r =>  moment(r.fecha).isSame(moment(d), "days") && moment(r.fecha).isSame(this.state.mes, "month"))
+                    .sort((a, b) => {
+                        if(moment(a.fecha).isBefore(moment(b.fecha))){ return -1 }
+                        else if(moment(b.fecha).isBefore(moment(a.fecha))){ return 1 }
+                        else{ return 0 }
+                    })
+                )
 
             const jornadas = dias.map((dia, i) => {
                 const arrayCachos = Array(Math.ceil(dia.length / 2)).fill(null).map((e, j) => {
                     const a = moment(dia[(2*j)].fecha);
                     const b = dia[(2*j)+1] ? moment(dia[(2*j)+1].fecha) : undefined;
-                    const m = b && moment.duration(b.diff(a))
-                    const horas = b ? Math.round(m.as('hours')*100)/100 : "-"
+                    const m = b ? moment.duration(b.diff(a)) : ( a.isSame(moment(), "day") ? moment.duration(moment().diff(a)) : "-" )
+                    const horas = m !== "-" ? Math.round(m.as('hours')*100)/100 : "-"
                     return {
                         key: u._id + "-" + i + "-" + j,
                         entrada: a.format(),
@@ -97,7 +101,6 @@ class Registro extends Component{
                         horas
                     }
                 })
-                //console.log(arrayCachos)
 
                 const tiempoDescanso = Array(arrayCachos.length > 0 ? arrayCachos.length - 1 : 0).fill(null).map((e, i) => {
                     const comienzoDescanso = moment(arrayCachos[i].salida)
@@ -177,14 +180,17 @@ class Registro extends Component{
                     {( this.state.userInfo.manager && !this.props.blueCollar) && 
                         <div>
                             <h3>Jornadas pendientes de aprobación</h3>
-                            <Table dataSource={this.state.jornadasPorAprobar} columns={[{
+                            <Table style={{ marginBottom: "1em" }} dataSource={this.state.jornadasPorAprobar} locale={{
+                                emptyText: "No hay jornadas pendientes de aprobar"
+                            }}
+                            columns={[{
                                 title: 'Usuario',
                                 dataIndex: 'usuario',
                                 key: 'usuario',
                             },{
                                 title: 'Día',
                                 dataIndex: 'entrada',
-                                key: 'entrada',
+                                key: 'dia',
                                 render: e => moment(e).format("YYYY-MM-DD")
                             },{
                                 title: 'Entrada',
@@ -228,10 +234,10 @@ class Registro extends Component{
                                     </div>
                                 </div>} key={i}>
                                     <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-evenly" }}>
-                                        <Statistic title="Horas trabajadas" value={ u.horasTrabajadas + "h" } />
-                                        <Statistic title="Horas pendientes" value={ u.horasPendientes + "h" } />
+                                        <Statistic title="Horas trabajadas" value={ Math.trunc(u.horasTrabajadas, 10) + "h " + Math.round((u.horasTrabajadas % 1) * 60) + "m"  } />
+                                        <Statistic title="Horas pendientes" value={ Math.trunc(u.horasPendientes, 10) + "h " + Math.round((u.horasPendientes % 1) * 60) + "m" } />
                                         <Statistic title="Días laborables de este mes" value={ u.diasLaborables } />
-                                        <Statistic title="Duración de su jornada" value={ u.duracionJornada + "h" } />
+                                        <Statistic title="Duración de jornada" value={ u.duracionJornada + "h" } />
                                     </div>
                                     <h3 style={{marginTop: 20 }}>Desglose de jornadas</h3>
                                     <Table key={"table"+i} dataSource={[].concat.apply([], u.jornadas.filter(j => j.aprobado))} columns={this.columns} />
@@ -254,7 +260,7 @@ class Registro extends Component{
                     width="90%"
                     footer={null}
                     >
-                    <ModuloRegistros usuario={this.state.modalUser} />
+                    <ModuloRegistros usuario={this.state.modalUser} cerrarModal={() => this.setState({ modalVisible: false })} />
                 </Modal>
             </Layout>
         )

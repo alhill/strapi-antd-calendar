@@ -171,7 +171,7 @@ class Calendario extends Component{
                     {
                         listData.map(item => (
                             <Popover key={item.fecha} content={<span>{item.user}</span>}>
-                                <Avatar src={item.avatar ? process.env.REACT_APP_API_URL + item.avatar : null}>{ item.user[0].toUpperCase() }</Avatar>
+                                <Avatar src={item.avatar ? item.avatar : null}>{ item.user[0].toUpperCase() }</Avatar>
                             </Popover>
                         ))
                     }
@@ -199,7 +199,28 @@ class Calendario extends Component{
                 this.setState({ modalPedirDia: false, dias: [...this.state.dias, dia] })
             }).catch(err => console.log(err))
         }).catch(err => console.log(err))
+    }
 
+    lanzarModalDia = dia => {
+        const misDias = this.state.dias.filter(d => d.user && (d.user._id === getUserInfo()._id ))
+        if( moment().isSameOrBefore(dia, "day") ){
+            if( this.state.festivos.find(f => moment(f.fecha).isSame(dia, "day")) === undefined ){
+                const pedido = misDias.find(d => moment(d.fecha).isSame(dia, "day"))
+                if(!pedido){
+                    this.setState({
+                        dia,
+                        modalPedirDia: true
+                    })
+                }
+                else{ 
+                    if(!pedido.aprobado){
+                        message.warning("La solicitud de ese día todavía se encuentra pendiente de aprobación") 
+                    }
+                }
+            }
+            else{ message.warning("No puedes solicitar un día festivo") }
+        }
+        else{ message.warning("No puedes solicitar un día pasado") }
     }
 
     render(){
@@ -218,10 +239,7 @@ class Calendario extends Component{
                         </Radio.Group>
                     </Row>
                     <Calendar
-                        onSelect={evt => this.setState({
-                            dia: evt,
-                            modalPedirDia: true
-                        })} 
+                        onSelect={evt => this.lanzarModalDia(evt)} 
                         dateFullCellRender={this.dateFullCellRender}
                         style={{ margin: "-1px 0"}}
                     />

@@ -77,7 +77,7 @@ export function cargarDocumentos(payload) {
   
 export const fetchDocumentos = () => {
     return (dispatch) => {
-        return request("/documentos").then(response => {
+        return request("/documentos?_limit=0").then(response => {
             dispatch(cargarDocumentos(response))
         })
         .catch(error => {
