@@ -21,11 +21,12 @@ import Analitica from './Analitica';
 import Registro from './Registro';
 import Perfil from './Perfil';
 import Grupos from './Grupos';
+import Passwords from './Passwords';
 import Configuracion from './Configuracion';
 import { Provider } from 'react-redux';
 import { getUserInfo } from './utils/auth'
 import store from './store';
-import { fetchCalendario, fetchUsuarios, fetchES, fetchDocumentos } from './actions'
+import { fetchCalendario, fetchUsuarios, fetchES, fetchDocumentos, fetchGrupos, fetchPws, fetchAuth } from './actions'
 
 moment.locale('es');
 
@@ -37,10 +38,13 @@ class App extends Component {
   componentDidMount(){
     const userInfo = getUserInfo()
     if( userInfo && userInfo.equipo ){
+      store.dispatch(fetchAuth())
       store.dispatch(fetchUsuarios())
       store.dispatch(fetchCalendario())
       store.dispatch(fetchES())
       store.dispatch(fetchDocumentos())
+      store.dispatch(fetchGrupos())
+      store.dispatch(fetchPws())
     }
   }
   render() {
@@ -58,6 +62,7 @@ class App extends Component {
                 <PrivateRoute exact path="/usuarios" component={Usuarios} />
                 <PrivateRoute onlyManager={true} exact path="/analitica" component={Analitica} />
                 <PrivateRoute onlyManager={true} exact path="/grupos" component={Grupos} />
+                <PrivateRoute onlyManager={true} exact path="/passwords" component={Passwords} />
                 <PrivateRoute onlyManager={true} exact path="/configuracion" component={Configuracion} />
                 <PrivateRoute exact path="/usuario/:id" component={EditUsuario} />
                 <PrivateRoute exact path="/registro" component={Registro} />

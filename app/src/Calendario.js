@@ -151,6 +151,7 @@ class Calendario extends Component{
 
     dateFullCellRender = value => {
 
+        console.log(value)
         const listData = this.getListData(value);
         const valueUTC = moment.utc(value.hour(2).minute(0).seconds(0).milliseconds(0)).format()
         
@@ -160,9 +161,7 @@ class Calendario extends Component{
             title: festivo ? festivo.nombre : value.format("LL"),
             color: festivo ? "rgba(255, 40, 30, 0.5)" : ( [0, 6].includes(value.day()) ? "rgba(255, 200, 100, 0.5)" : "transparent" )
         }
-        
-        // const title = this.state.festivos.find(f => f.fecha === valueUTC) ? this.state.festivos.find(f => f.fecha === valueUTC).nombre : "PENE"
-        // const color = this.state.festivosArrUTC.includes(valueUTC) ? "red" : ([0, 6].includes(value.day()) ? "orange" : "transparent" )
+
         return (
             <div className="ant-fullcalendar-date" style={{ backgroundColor: tc.color, margin: "-1px 0", borderRadius: 3 }} title={tc.title}>
                 <div className="ant-fullcalendar-value">{ value.date() }</div>
@@ -170,7 +169,7 @@ class Calendario extends Component{
                     <ul className="events">
                     {
                         listData.map(item => (
-                            <Popover key={item.fecha} content={<span>{item.user}</span>}>
+                            <Popover key={item.user + item.fecha} content={<span>{item.user}</span>}>
                                 <Avatar src={item.avatar ? item.avatar : null}>{ item.user[0].toUpperCase() }</Avatar>
                             </Popover>
                         ))

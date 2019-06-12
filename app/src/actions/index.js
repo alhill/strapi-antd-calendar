@@ -1,5 +1,5 @@
 import { 
-    CARGAR_USUARIOS, CARGAR_CALENDARIO, CARGAR_ES, CARGAR_DOCUMENTOS, CAMBIAR_BLUE_COLLAR
+    CARGAR_USUARIOS, CARGAR_CALENDARIO, CARGAR_ES, CARGAR_DOCUMENTOS, CARGAR_GRUPOS, CARGAR_PWS, CARGAR_AUTH, CAMBIAR_BLUE_COLLAR
 } from "../constants/action-types"
 import request from "../utils/request"
 import gql from "../utils/gql"
@@ -25,6 +25,24 @@ export const fetchUsuarios = () => {
         const equipo = getUserInfo() && getUserInfo().equipo
         return request("/users?_limit=0&equipo=" + equipo).then(response => {
             dispatch(cargarUsuarios(response))
+        })
+        .catch(error => {
+            throw(error);
+        });
+    };
+};
+
+export function cargarAuth(payload) {
+    return {
+        type: CARGAR_AUTH,
+        payload
+    }
+}
+  
+export const fetchAuth = () => {
+    return (dispatch) => {
+        return request("/users/me").then(response => {
+            dispatch(cargarAuth(response))
         })
         .catch(error => {
             throw(error);
@@ -79,6 +97,42 @@ export const fetchDocumentos = () => {
     return (dispatch) => {
         return request("/documentos?_limit=0").then(response => {
             dispatch(cargarDocumentos(response))
+        })
+        .catch(error => {
+            throw(error);
+        });
+    };
+};
+
+export function cargarGrupos(payload) {
+    return {
+        type: CARGAR_GRUPOS,
+        payload
+    }
+}
+  
+export const fetchGrupos = () => {
+    return (dispatch) => {
+        return request("/grupos?_limit=0").then(response => {
+            dispatch(cargarGrupos(response))
+        })
+        .catch(error => {
+            throw(error);
+        });
+    };
+};
+
+export function cargarPws(payload) {
+    return {
+        type: CARGAR_PWS,
+        payload
+    }
+}
+  
+export const fetchPws = () => {
+    return (dispatch) => {
+        return request("/pws?_limit=0").then(response => {
+            dispatch(cargarPws(response))
         })
         .catch(error => {
             throw(error);

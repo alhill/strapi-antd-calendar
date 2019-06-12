@@ -3,7 +3,7 @@ import Frame from './Frame'
 import { Form, Icon, Input, Button, Layout, Card, Row, Col, message } from 'antd';
 import { saveAuthData, getToken } from './utils/auth';
 import { connect } from 'react-redux'
-import { fetchCalendario, fetchUsuarios, fetchES } from './actions'
+import { fetchCalendario, fetchUsuarios, fetchES, fetchAuth } from './actions'
 
 function hasErrors(fieldsError) {
     return Object.keys(fieldsError).some(field => fieldsError[field]);
@@ -46,6 +46,7 @@ class Login extends Component{
                     else{
                         this.setState({ error: false })
                         saveAuthData(data);
+                        this.props.dispatch(fetchAuth())
                         this.props.dispatch(fetchUsuarios())
                         this.props.dispatch(fetchCalendario())
                         this.props.dispatch(fetchES())

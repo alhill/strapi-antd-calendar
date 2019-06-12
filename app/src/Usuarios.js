@@ -30,7 +30,7 @@ class Usuarios extends Component{
             key: 'email',
         }]
 
-        const extraColumnsA = getUserInfo.manager ? [{
+        const extraColumnsA = getUserInfo().manager ? [{
             title: 'Manager',
             dataIndex: 'manager',
             render: bool => bool ? <Icon type="check-circle" theme="twoTone" twoToneColor="#eb2f96" twoToneColor="#52c41a"/> : <Icon type="close-circle" theme="twoTone" twoToneColor="#eb2f96"/>
@@ -169,7 +169,7 @@ class Usuarios extends Component{
                     <h1>Usuarios activos</h1>
                     <Table dataSource={activos} columns={[...columns, ...extraColumnsA, ...extraColumnsA2 ]} />
                     {
-                        getUserInfo.manager && [
+                        getUserInfo().manager && [
                             <h1 key="pendAprobTitle">Usuarios pendientes de aprobación</h1>,
                             <Table key="pendAprobTable" dataSource={pendientes} columns={[...columns, ...extraColumnsB]} />
                         ]

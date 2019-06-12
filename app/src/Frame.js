@@ -141,6 +141,9 @@ class Frame extends Component{
                                 <Menu.Item key="/grupos" style={{ alignItems: "center", display: (user && (user.manager && !this.props.blueCollar)) ? "flex" : "none"}}>
                                     <Link to="/grupos">Grupos</Link>
                                 </Menu.Item>
+                                <Menu.Item key="/passwords" style={{ alignItems: "center" }}>
+                                    <Link to="/passwords">Contraseñas</Link>
+                                </Menu.Item>
                                 <Menu.Item key="/configuracion" style={{ alignItems: "center", display: (user && (user.manager && !this.props.blueCollar)) ? "flex" : "none"}}>
                                     <Link to="/configuracion">Configuración</Link>
                                 </Menu.Item>

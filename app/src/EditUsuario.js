@@ -86,7 +86,7 @@ class EditUsuario extends Component{
             <Layout style={{height:"100vh"}}>
                 <Frame isLogged={ getToken() ? true : false }>
                     <h1>{ usuario.username }</h1>
-                    { getUserInfo.manager && [
+                    { getUserInfo().manager && [
                         <Form.Item key="editUserJornada" label="Duración media de su jornada laboral">
                             <Input type="number" value={this.state.duracionjornada} onChange={e => this.setState({ duracionjornada: e.target.value })} />
                         </Form.Item>,
