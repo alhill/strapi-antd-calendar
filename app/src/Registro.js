@@ -6,6 +6,7 @@ import { socketConnect } from 'socket.io-react';
 import moment from 'moment';
 import { getUserInfo, getToken } from './utils/auth';
 import ModuloRegistros from './modulosConfig/ModuloRegistros'
+import ModalInfoRegistros from './components/ModalInfoRegistros'
 import request from './utils/request';
 import { fetchES } from './actions';
 
@@ -44,6 +45,11 @@ class Registro extends Component{
         key: 'tiempoDescanso',
         sorter: (a, b) => a.tiempoDescanso - b.tiempoDescanso,
         render: tiempoDescanso => tiempoDescanso !== "-" ? Math.trunc(tiempoDescanso, 10) + "h " + Math.round((tiempoDescanso % 1) * 60) + "m" : "-"
+    }, {
+        title: "",
+        dataIndex: "detalles",
+        key: "detalles",
+        render: () => <Tag color="blue">Detalles</Tag>
     }]
 
     componentDidMount() {
@@ -117,7 +123,7 @@ class Registro extends Component{
                     aprobado: arrayCachos.map(a => a.aprobado).includes(false) ? false : true,
                     horas: !arrayHoras.includes("-") ? arrayHoras.reduce((a, b) => a + b, 0) : "-",
                     usuario: u.username,
-                    idsRegistros: dia.map(d => d._id),
+                    registros: dia,
                     tiempoDescanso
                 } : []
                 return jornada
@@ -131,43 +137,17 @@ class Registro extends Component{
             //console.log({ ...u, jornadas, horasTrabajadas, horasPendientes, porcentajeHoras, duracionJornada, diasLaborables })
             return { ...u, jornadas, horasTrabajadas, horasPendientes, porcentajeHoras, duracionJornada, diasLaborables }
         })
+        
         this.setState({ 
             usuarios,
-            jornadasPorAprobar: [].concat.apply([], usuarios.map(u => u.jornadas)).filter(j => !Array.isArray(j) && !j.aprobado)
+            jornadasPorAprobar: [].concat.apply([], usuarios.filter(u => u._id === getUserInfo()._id || (getUserInfo().manager && !this.props.blueCollar)).map(u => u.jornadas)).filter(j => !Array.isArray(j) && !j.aprobado)
         })
     }
 
-    jornadaPendiente = (accion, ids) => {
-        if(accion === true){
-            ids.forEach(id => {
-                request("/registros/" + id, {
-                    method: "PUT",
-                    body: {
-                        aprobado: true
-                    }
-                }).then(data => {
-                    //console.log(data)
-                    message.success("Se ha aprobado la jornada correctamente")
-                    this.props.dispatch(fetchES())
-                }).catch(err => {
-                    console.log(err)
-                    message.error("Ha ocurrido un error durante la aprobación de la jornada")
-                })
-            })
-        }
-        else{
-            ids.forEach(id => {
-                request("/registros/" + id, { method: "DELETE" }).then(data => {
-                    //console.log(data)
-                    message.success("Se ha denegado la jornada correctamente")
-                    this.props.dispatch(fetchES())
-                }).catch(err => {
-                    console.log(err)
-                    message.error("Ha ocurrido un error durante la denegación de la jornada")
-                })
-            })
-        }
+    handleRowClick = (fila, apr) => {
+        this.setState({ rowSelect: fila, modalInfo: true, modalInfoApr: apr })
     }
+
 
     render(){
         const { modalVisible, modalLoading } = this.state
@@ -177,12 +157,15 @@ class Registro extends Component{
                 <Frame isLogged={ getToken() ? true : false }>
                     <h1>Jornadas</h1>
                     <MonthPicker placeholder="Seleccionar mes" value={this.state.mes} onChange={mes => this.setState({ mes })} style={{ marginBottom: 20 }}/>
-                    {( this.state.userInfo.manager && !this.props.blueCollar) && 
+                    {/*( this.state.userInfo.manager && !this.props.blueCollar)*/ true &&
                         <div>
                             <h3>Jornadas pendientes de aprobación</h3>
                             <Table style={{ marginBottom: "1em" }} dataSource={this.state.jornadasPorAprobar} locale={{
                                 emptyText: "No hay jornadas pendientes de aprobar"
                             }}
+                            onRow={row => ({
+                                onClick: () => this.handleRowClick(row, true)
+                            })}
                             columns={[{
                                 title: 'Usuario',
                                 dataIndex: 'usuario',
@@ -201,29 +184,21 @@ class Registro extends Component{
                                 title: 'Salida',
                                 dataIndex: 'salida',
                                 key: 'salida',
-                                render: e => moment(e).format("HH:mm")
+                                render: e => moment(e).format("HH:mm") === "Invalid date" ? " - " : moment(e).format("HH:mm")
                             },{
                                 title: 'Horas',
                                 dataIndex: 'horas',
                                 key: 'horas',
-                            },{
-                                title: 'Acción',
-                                key: 'action',
-                                render: (text, record) => (
-                                  <span>
-                                    <Popconfirm title={`¿Estás seguro de que deseas aprobar la jornada?`} onConfirm={evt => this.jornadaPendiente(true, record.idsRegistros)}>
-                                        <Tag color="green" key={`${record._id}_aceptar`}>Aceptar</Tag>
-                                    </Popconfirm>
-                                    <Popconfirm title={`¿Estás seguro de que deseas denegar jornada?`} onConfirm={evt => this.jornadaPendiente(false, record.idsRegistros) }>
-                                        <Tag color="volcano" key={`${record._id}_denegar`}>Denegar</Tag>
-                                    </Popconfirm>
-                                  </span>
-                                ),
+                            }, {
+                                title: "",
+                                dataIndex: "detalles",
+                                key: "detalles",
+                                render: () => <Tag color="blue">Detalles</Tag>
                             }]}/>
                         </div>
                     }
 
-                        <Collapse>
+                        <Collapse defaultActiveKey={!(getUserInfo().manager && !this.props.blueCollar) ? getUserInfo()._id : undefined}>
                         {
                             this.state.usuarios && this.state.usuarios.filter(u => {
                                 return this.state.userInfo._id === u._id || (this.state.userInfo.manager && !this.props.blueCollar)}).map((u, i) => [
@@ -232,7 +207,7 @@ class Registro extends Component{
                                     <div style={{ width: "200px",  }}>
                                         <Progress percent={u.porcentajeHoras} />
                                     </div>
-                                </div>} key={i}>
+                                </div>} key={u._id}>
                                     <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-evenly" }}>
                                         <Statistic title="Horas trabajadas" value={ Math.trunc(u.horasTrabajadas, 10) + "h " + Math.round((u.horasTrabajadas % 1) * 60) + "m"  } />
                                         <Statistic title="Horas pendientes" value={ Math.trunc(u.horasPendientes, 10) + "h " + Math.round((u.horasPendientes % 1) * 60) + "m" } />
@@ -240,7 +215,14 @@ class Registro extends Component{
                                         <Statistic title="Duración de jornada" value={ u.duracionJornada + "h" } />
                                     </div>
                                     <h3 style={{marginTop: 20 }}>Desglose de jornadas</h3>
-                                    <Table key={"table"+i} dataSource={[].concat.apply([], u.jornadas.filter(j => j.aprobado))} columns={this.columns} />
+                                    <Table 
+                                        key={"table"+i} 
+                                        dataSource={[].concat.apply([], u.jornadas.filter(j => j.aprobado))} 
+                                        columns={this.columns} 
+                                        onRow={row => ({
+                                            onClick: () => this.handleRowClick(row, false)
+                                        })}
+                                    />
                                     {( this.state.userInfo._id === u._id || (this.state.userInfo.manager && !this.props.blueCollar)) && 
                                         <div style={{ display: "flex", justifyContent: "center", marginTop: 20 }}>
                                             <Button onClick={() => this.setState({ modalVisible: true, modalUser: u._id })}>Añadir jornada</Button>
@@ -262,6 +244,13 @@ class Registro extends Component{
                     >
                     <ModuloRegistros usuario={this.state.modalUser} cerrarModal={() => this.setState({ modalVisible: false })} />
                 </Modal>
+                <ModalInfoRegistros
+                    visible={this.state.modalInfo}
+                    colAprobado={this.state.modalInfoApr}
+                    cb={() => this.setState({ modalInfo: false })}
+                    datos={this.state.rowSelect}
+                    blueCollar={this.props.blueCollar}
+                />
             </Layout>
         )
     }

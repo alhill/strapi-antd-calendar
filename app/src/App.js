@@ -60,9 +60,9 @@ class App extends Component {
                 <PrivateRoute exact path="/archivos" component={Documentos} />
                 <PrivateRoute exact path="/perfil" component={Perfil} />
                 <PrivateRoute exact path="/usuarios" component={Usuarios} />
+                <PrivateRoute exact path="/passwords" component={Passwords} />
                 <PrivateRoute onlyManager={true} exact path="/analitica" component={Analitica} />
                 <PrivateRoute onlyManager={true} exact path="/grupos" component={Grupos} />
-                <PrivateRoute onlyManager={true} exact path="/passwords" component={Passwords} />
                 <PrivateRoute onlyManager={true} exact path="/configuracion" component={Configuracion} />
                 <PrivateRoute exact path="/usuario/:id" component={EditUsuario} />
                 <PrivateRoute exact path="/registro" component={Registro} />

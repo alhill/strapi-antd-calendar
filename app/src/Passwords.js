@@ -6,12 +6,13 @@ import { getToken, getUserInfo } from './utils/auth'
 import { connect } from 'react-redux'
 import request from './utils/request';
 import { fetchPws } from './actions';
+import PrivateComponent from './PrivateComponent';
 
 class Passwords extends Component{
     
     state = {
         nuevaNombre: "",
-        nuevaCampos: [{"" : ""}],
+        nuevaCampos: [{"username" : ""}, {"password": ""}],
         nuevaGrupos: [],
         nuevaUsuarios: [],
         modalPw: false,
@@ -93,7 +94,7 @@ class Passwords extends Component{
                 this.props.dispatch(fetchPws())
                 this.setState({        
                     nuevaNombre: "",
-                    nuevaCampos: [{"" : ""}],
+                    nuevaCampos: [{"username" : ""}, {"password": ""}],
                     nuevaGrupos: [],
                     nuevaUsuarios: []
                 })
@@ -131,58 +132,64 @@ class Passwords extends Component{
                             key: "nombre"
                         },
                         {
+                            title: "Asignada a",
+                            render: row => {
+                                console.log(row)
+                                return [...row.grupos, ...row.users].map(e => <Tag style={{ margin: "2px" }}>{e.username ? e.username : e.nombre}</Tag>)
+                            }
+                        },
+                        {
                             title: "",
                             key: "btnConsulta",
                             render: pwSelect => (
                                 <div style={{ display: "flex", justifyContent: "flex-end"}}>
-                                    {(getUserInfo().manager && !this.props.blueCollar ) &&
-                                        <div>
-                                            <Popconfirm title="Are you sure delete this task?"
+                                    <div style={{ display: "flex" }}>
+                                        <PrivateComponent blue={this.props.blueCollar}>
+                                            <Popconfirm title="Se borrará la entrada. ¿Quieres continuar?"
                                                 onConfirm={() => this.borrarEntrada(pwSelect)}
                                                 okText="Aceptar"
                                                 cancelText="Cancelar"
                                             >
                                                 <Tag color="volcano" onClick={() => this.setState({ pwSelect })}><Icon type="delete" /> Eliminar</Tag>
                                             </Popconfirm>
-                                            <Tag color="gold" onClick={() => this.setState({ modalEditarPws: true, pwSelect })}><Icon type="edit" /> Editar</Tag>
-                                        </div>
-                                    }
+                                        </PrivateComponent>
+                                        <Tag color="gold" onClick={() => this.setState({ modalEditarPws: true, pwSelect })}><Icon type="edit" /> Editar</Tag>
+                                    </div>
                                     <Tag color="blue" onClick={() => this.setState({ modalPw: true, pwSelect })}><Icon type="search" /> Consultar</Tag>
                                 </div>
                             )
                         }
                     ]} />
 
-                    {(getUserInfo().manager && !this.props.blueCollar ) &&
-                        <Collapse>
-                            <Panel key="nueva" header="Nueva entrada">
-                                <Item label="Nombre de la entrada">
-                                    <Input type="text" value={ this.state.nuevaNombre } onChange={evt => this.setState({ nuevaNombre: evt.target.value })} />
-                                </Item>
-                                <Item label="Campos">
-                                    {
-                                        this.state.nuevaCampos.map((c, i) => {
-                                            return (
-                                                <div key={"campo" + i} style={{ display: "flex" }}>
-                                                    <Item label="Identificador" style={{ flex: 1, paddingRight: "1em" }}>
-                                                        <Input type="text" value={ Object.keys(c)[0] } onChange={evt => this.handleRepeater(evt.target.value, i, "key")} />
+                    <Collapse>
+                        <Panel key="nueva" header="Nueva entrada">
+                            <Item label="Nombre de la entrada">
+                                <Input type="text" value={ this.state.nuevaNombre } onChange={evt => this.setState({ nuevaNombre: evt.target.value })} />
+                            </Item>
+                            <Item label="Campos">
+                                {
+                                    this.state.nuevaCampos.map((c, i) => {
+                                        return (
+                                            <div key={"campo" + i} style={{ display: "flex" }}>
+                                                <Item label="Identificador" style={{ flex: 1, paddingRight: "1em" }}>
+                                                    <Input type="text" value={ Object.keys(c)[0] } onChange={evt => this.handleRepeater(evt.target.value, i, "key")} />
+                                                </Item>
+                                                <Item label="Valor" style={{ flex: 1, paddingRight: "1em" }}>
+                                                    <Input type="text" value={ Object.values(c)[0] } onChange={evt => this.handleRepeater(evt.target.value, i, "value")} />
+                                                </Item>
+                                                { this.state.nuevaCampos.length > 1 &&
+                                                    <Item label=" " colon={false}>
+                                                        <Tag color="volcano" onClick={() => this.setState({ nuevaCampos: this.state.nuevaCampos.filter((e, it) => it !== i)})}>
+                                                            <Icon type="delete" />
+                                                        </Tag>
                                                     </Item>
-                                                    <Item label="Valor" style={{ flex: 1, paddingRight: "1em" }}>
-                                                        <Input type="text" value={ Object.values(c)[0] } onChange={evt => this.handleRepeater(evt.target.value, i, "value")} />
-                                                    </Item>
-                                                    { this.state.nuevaCampos.length > 1 &&
-                                                        <Item label=" " colon={false}>
-                                                            <Tag color="volcano" onClick={() => this.setState({ nuevaCampos: this.state.nuevaCampos.filter((e, it) => it !== i)})}>
-                                                                <Icon type="delete" />
-                                                            </Tag>
-                                                        </Item>
-                                                    }
-                                                </div>
-                                            )
-                                        })
-                                    }
-                                    <Tag onClick={() => this.setState({ nuevaCampos: [...this.state.nuevaCampos, {"" : ""}]})}><Icon type="plus" /> Nuevo campo</Tag>
-                                </Item>
+                                                }
+                                            </div>
+                                        )
+                                    })
+                                }
+                                <Tag onClick={() => this.setState({ nuevaCampos: [...this.state.nuevaCampos, {"" : ""}]})}><Icon type="plus" /> Nuevo campo</Tag>
+                            </Item>
                                 <Item label="Asignar a grupos">
                                     <Select style={{ width: "100%" }} onChange={evt => this.setState({ nuevaGrupos: [...new Set([...this.state.nuevaGrupos, evt])]})}>
                                         {
@@ -215,10 +222,9 @@ class Passwords extends Component{
                                         }  
                                     </div>
                                 </Item>
-                                <Button onClick={this.nuevaEntrada}>Guardar entrada</Button>
-                            </Panel>
-                        </Collapse>
-                    }
+                            <Button onClick={this.nuevaEntrada}>Guardar entrada</Button>
+                        </Panel>
+                    </Collapse>
                 </Frame>
                 <Modal
                     visible={this.state.modalPw}
@@ -258,6 +264,7 @@ class Passwords extends Component{
                     pwSelect={this.state.pwSelect}
                     grupos={this.props.grupos}
                     usuarios={this.props.usuarios}
+                    blue={this.props.blueCollar}
                 />
             </Layout>
         )

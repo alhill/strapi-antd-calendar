@@ -19,7 +19,51 @@ class Usuarios extends Component{
     }
 
     componentDidMount() {
+        this.cargaColumnas();
+        if(this.props.usuarios){
+            this.filtraUsuarios(this.props.usuarios) 
+        }
+    }
 
+    componentDidUpdate(prevProps, prevState){
+        if(prevProps.usuarios !== this.props.usuarios){
+            this.filtraUsuarios(this.props.usuarios)
+        }
+        else if(prevState.modalAsociar !== this.state.modalAsociar){
+            if( this.state.modalAsociar ){
+                this.props.socket.on('notification', msg => {
+                    console.log(msg)
+                    if(!this.props.usuarios.map(u => u.idcard).includes(msg.es)){
+                        request("/users/" + this.state.usuarioAsociar, {
+                            method: "PUT",
+                            body: {
+                                idcard: msg.es && msg.es.idcard
+                            }
+                        }).then(data => {
+                            message.info("La tarjeta ha sido asociada correctamente")
+                            this.fetchUsers()
+                            this.setState({ modalAsociar: false, usuarioAsociar: undefined })
+                        }).catch(err => {
+                            message.error("Se produjo un error durante el proceso de asociación de la tarjeta")
+                            console.log(err)
+                            this.setState({ modalAsociar: false, usuarioAsociar: undefined })
+                        })
+                    }
+                    else{
+                        message.error("Esa tarjeta ya está asociada a un usuario. Desasociela antes de reasignarla.")
+                    }
+                })
+            }
+            else{
+                this.props.socket.off('notification')
+            }
+        }
+        else if(prevProps.blueCollar !== this.props.blueCollar){
+            this.cargaColumnas();
+        }
+    }
+
+    cargaColumnas = () => {
         const columns = [{
             title: 'Nombre de usuario',
             dataIndex: 'username',
@@ -30,7 +74,7 @@ class Usuarios extends Component{
             key: 'email',
         }]
 
-        const extraColumnsA = getUserInfo().manager ? [{
+        const extraColumnsA = (getUserInfo().manager && !this.props.blueCollar) ? [{
             title: 'Manager',
             dataIndex: 'manager',
             render: bool => bool ? <Icon type="check-circle" theme="twoTone" twoToneColor="#eb2f96" twoToneColor="#52c41a"/> : <Icon type="close-circle" theme="twoTone" twoToneColor="#eb2f96"/>
@@ -73,44 +117,6 @@ class Usuarios extends Component{
             ),
         }]
         this.setState({ columns, extraColumnsA, extraColumnsA2, extraColumnsB })
-        if(this.props.usuarios){
-            this.filtraUsuarios(this.props.usuarios) 
-        }
-    }
-
-    componentDidUpdate(prevProps, prevState){
-        if(prevProps.usuarios !== this.props.usuarios){
-            this.filtraUsuarios(this.props.usuarios)
-        }
-        else if(prevState.modalAsociar !== this.state.modalAsociar){
-            if( this.state.modalAsociar ){
-                this.props.socket.on('notification', msg => {
-                    console.log(msg)
-                    if(!this.props.usuarios.map(u => u.idcard).includes(msg.es)){
-                        request("/users/" + this.state.usuarioAsociar, {
-                            method: "PUT",
-                            body: {
-                                idcard: msg.es && msg.es.idcard
-                            }
-                        }).then(data => {
-                            message.info("La tarjeta ha sido asociada correctamente")
-                            this.fetchUsers()
-                            this.setState({ modalAsociar: false, usuarioAsociar: undefined })
-                        }).catch(err => {
-                            message.error("Se produjo un error durante el proceso de asociación de la tarjeta")
-                            console.log(err)
-                            this.setState({ modalAsociar: false, usuarioAsociar: undefined })
-                        })
-                    }
-                    else{
-                        message.error("Esa tarjeta ya está asociada a un usuario. Desasociela antes de reasignarla.")
-                    }
-                })
-            }
-            else{
-                this.props.socket.off('notification')
-            }
-        }
     }
 
     filtraUsuarios = usuarios => {
@@ -169,7 +175,7 @@ class Usuarios extends Component{
                     <h1>Usuarios activos</h1>
                     <Table dataSource={activos} columns={[...columns, ...extraColumnsA, ...extraColumnsA2 ]} />
                     {
-                        getUserInfo().manager && [
+                        (getUserInfo().manager && !this.props.blueCollar) && [
                             <h1 key="pendAprobTitle">Usuarios pendientes de aprobación</h1>,
                             <Table key="pendAprobTable" dataSource={pendientes} columns={[...columns, ...extraColumnsB]} />
                         ]
@@ -192,7 +198,8 @@ class Usuarios extends Component{
 
 const mapStateToProps = state => {
     return {
-        usuarios: state.usuarios
+        usuarios: state.usuarios,
+        blueCollar: state.blueCollar
     }
 }
 

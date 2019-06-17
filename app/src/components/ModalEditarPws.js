@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { Modal, Form, Tag, Button, Input, Icon, Select, message } from 'antd';
 import { fetchPws } from '../actions'
+import PrivateComponent from '../PrivateComponent'
 import request from '../utils/request'
 import { connect } from 'react-redux'
 
@@ -122,38 +123,40 @@ class ModalEditarPws extends Component {
                         }
                         <Tag onClick={() => this.setState({ editCampos: [...this.state.editCampos, {"" : ""}]})}><Icon type="plus" /> Nuevo campo</Tag>
                     </Item>
-                    <Item label="Asignar a grupos">
-                        <Select style={{ width: "100%" }} onChange={evt => this.setState({ editGrupos: [...new Set([...this.state.editGrupos, evt])]})}>
-                            {
-                                this.props.grupos.map((g, i) => (
-                                    <Option key={"grupo" + i } value={g.nombre}>{ g.nombre }</Option>
-                                ))
-                            }
-                        </Select>
-                        <div style={{ paddingBottom: 30 }}>
-                            {
-                                this.state.editGrupos.map((g, i) => (
-                                    <Tag closable key={"gtag" + g} onClose={() => this.setState({ editGrupos: this.state.editGrupos.filter(h => h !== g) })}>{g}</Tag>
-                                ))
-                            }  
-                        </div>
-                    </Item>
-                    <Item label="Asignar a usuarios">
-                        <Select style={{ width: "100%" }} onChange={evt => this.setState({ editUsuarios: [...new Set([...this.state.editUsuarios, evt])]})}>
-                            {
-                                this.props.usuarios.map((u, i) => (
-                                    <Option key={"user" + i } value={u.username}>{ u.username }</Option>
-                                ))
-                            }
-                        </Select>
-                        <div style={{ paddingBottom: 30 }}>
-                            {
-                                this.state.editUsuarios.map((u, i) => (
-                                    <Tag closable key={"utag" + u} onClose={() => this.setState({ editUsuarios: this.state.editUsuarios.filter(v => v !== u) })}>{u}</Tag>
-                                ))
-                            }  
-                        </div>
-                    </Item>
+                    <PrivateComponent blue={this.props.blue}>
+                        <Item label="Asignar a grupos">
+                            <Select style={{ width: "100%" }} onChange={evt => this.setState({ editGrupos: [...new Set([...this.state.editGrupos, evt])]})}>
+                                {
+                                    this.props.grupos.map((g, i) => (
+                                        <Option key={"grupo" + i } value={g.nombre}>{ g.nombre }</Option>
+                                    ))
+                                }
+                            </Select>
+                            <div style={{ paddingBottom: 30 }}>
+                                {
+                                    this.state.editGrupos.map((g, i) => (
+                                        <Tag closable key={"gtag" + g} onClose={() => this.setState({ editGrupos: this.state.editGrupos.filter(h => h !== g) })}>{g}</Tag>
+                                    ))
+                                }  
+                            </div>
+                        </Item>
+                        <Item label="Asignar a usuarios">
+                            <Select style={{ width: "100%" }} onChange={evt => this.setState({ editUsuarios: [...new Set([...this.state.editUsuarios, evt])]})}>
+                                {
+                                    this.props.usuarios.map((u, i) => (
+                                        <Option key={"user" + i } value={u.username}>{ u.username }</Option>
+                                    ))
+                                }
+                            </Select>
+                            <div style={{ paddingBottom: 30 }}>
+                                {
+                                    this.state.editUsuarios.map((u, i) => (
+                                        <Tag closable key={"utag" + u} onClose={() => this.setState({ editUsuarios: this.state.editUsuarios.filter(v => v !== u) })}>{u}</Tag>
+                                    ))
+                                }  
+                            </div>
+                        </Item>
+                    </PrivateComponent>
                     <Button onClick={this.editarEntrada}>Editar entrada</Button>
                 </div>
             </Modal>

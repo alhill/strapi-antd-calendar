@@ -242,7 +242,7 @@ class Calendario extends Component{
                         dateFullCellRender={this.dateFullCellRender}
                         style={{ margin: "-1px 0"}}
                     />
-                    <PrivateComponent>
+                    <PrivateComponent blue={this.props.blueCollar}>
                         <h1>Días pendientes de revisión</h1>
                         <Table dataSource={this.state.diasPorAprobar} columns={this.state.columns || []} />
                     </PrivateComponent>
@@ -264,7 +264,8 @@ class Calendario extends Component{
 
 const mapStateToProps = state => {
     return {
-        dias: state.dias
+        dias: state.dias,
+        blueCollar: state.blueCollar
     }
 }
 

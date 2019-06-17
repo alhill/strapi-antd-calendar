@@ -6,7 +6,7 @@ class PrivateComponent extends Component {
 
   render() {
     const userInfo = getUserInfo()
-    const authData = (typeof userInfo === "object" && userInfo !== null && userInfo.blocked === false ) ? userInfo : {
+    const authData = (typeof userInfo === "object" && userInfo !== null && userInfo.blocked === false && !this.props.blue) ? userInfo : {
       role: {
         name: "Not Authorised"
       }

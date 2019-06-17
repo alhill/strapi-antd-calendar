@@ -5,7 +5,7 @@ import { connect } from 'react-redux'
 import request from './utils/request'
 import Frame from './Frame';
 import { fetchUsuarios, fetchES } from './actions'
-
+import PrivateComponent from './PrivateComponent';
 
 class EditUsuario extends Component{
 
@@ -86,17 +86,17 @@ class EditUsuario extends Component{
             <Layout style={{height:"100vh"}}>
                 <Frame isLogged={ getToken() ? true : false }>
                     <h1>{ usuario.username }</h1>
-                    { getUserInfo().manager && [
+                    <PrivateComponent blue={this.props.blueCollar}>
                         <Form.Item key="editUserJornada" label="Duración media de su jornada laboral">
                             <Input type="number" value={this.state.duracionjornada} onChange={e => this.setState({ duracionjornada: e.target.value })} />
-                        </Form.Item>,
+                        </Form.Item>
                         <Form.Item key="editUserManager" label="Manager">
                             <Radio.Group  value={ this.state.manager }>
                                 <Radio.Button value={true} onClick={() => this.setState({ manager: true })}>Sí</Radio.Button>
                                 <Radio.Button value={false} onClick={() => this.setState({ manager: false })}>No</Radio.Button>
                             </Radio.Group>
                         </Form.Item>
-                    ]}
+                    </PrivateComponent>
                     <Form.Item label="Frases (una por línea)">
                         <Input.TextArea rows={6} value={this.state.frasesStr} onChange={e => this.setState({ frasesStr: e.target.value })} />
                     </Form.Item>
@@ -116,7 +116,8 @@ class EditUsuario extends Component{
 
 const mapStateToProps = state => {
     return {
-        usuarios: state.usuarios
+        usuarios: state.usuarios,
+        blueCollar: state.blueCollar
     }
 }
 
