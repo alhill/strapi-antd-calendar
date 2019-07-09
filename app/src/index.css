@@ -18,3 +18,15 @@ h1{
 .sinCabecera .ant-collapse-content > .ant-collapse-content-box{
     padding: 0;
 }
+.sinactimel{
+    filter: saturate(0) contrast(1.5);
+    opacity: 0.3;
+}
+
+.ant-avatar img{
+    object-fit: cover
+}
+
+ul{
+    padding-inline-start: 1.5em
+}

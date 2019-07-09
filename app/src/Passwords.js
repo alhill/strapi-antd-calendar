@@ -125,41 +125,47 @@ class Passwords extends Component{
             <Layout style={{height:"100vh"}}>
                 <Frame isLogged={ getToken() ? true : false }>
                     <h2>Contraseñas</h2>
-                    <Table style={{ paddingBottom: 30 }} rowKey="_id" dataSource={this.state.pws} columns={[
-                        {
-                            title: "Entrada",
-                            dataIndex: "nombre",
-                            key: "nombre"
-                        },
-                        {
-                            title: "Asignada a",
-                            render: row => {
-                                console.log(row)
-                                return [...row.grupos, ...row.users].map(e => <Tag style={{ margin: "2px" }}>{e.username ? e.username : e.nombre}</Tag>)
-                            }
-                        },
-                        {
-                            title: "",
-                            key: "btnConsulta",
-                            render: pwSelect => (
-                                <div style={{ display: "flex", justifyContent: "flex-end"}}>
-                                    <div style={{ display: "flex" }}>
-                                        <PrivateComponent blue={this.props.blueCollar}>
-                                            <Popconfirm title="Se borrará la entrada. ¿Quieres continuar?"
-                                                onConfirm={() => this.borrarEntrada(pwSelect)}
-                                                okText="Aceptar"
-                                                cancelText="Cancelar"
-                                            >
-                                                <Tag color="volcano" onClick={() => this.setState({ pwSelect })}><Icon type="delete" /> Eliminar</Tag>
-                                            </Popconfirm>
-                                        </PrivateComponent>
-                                        <Tag color="gold" onClick={() => this.setState({ modalEditarPws: true, pwSelect })}><Icon type="edit" /> Editar</Tag>
+                    <Table 
+                        style={{ paddingBottom: 30 }} 
+                        rowKey="_id" 
+                        dataSource={this.state.pws} 
+                        onRow={row => ({
+                            onClick: () => this.setState({ modalPw: true, pwSelect: row })
+                        })}
+                        columns={[
+                            {
+                                title: "Entrada",
+                                dataIndex: "nombre",
+                                key: "nombre"
+                            },
+                            {
+                                title: "Asignada a",
+                                render: row => [...row.grupos, ...row.users].map((e, i) => <Tag key={e._id + "-" + i} style={{ margin: "2px" }}>{e.username ? e.username : e.nombre}</Tag>),
+                                key: "asignadaA"
+                            },
+                            {
+                                title: "",
+                                key: "btnConsulta",
+                                render: pwSelect => (
+                                    <div style={{ display: "flex", justifyContent: "flex-end"}}>
+                                        <div style={{ display: "flex" }}>
+                                            <PrivateComponent blue={this.props.blueCollar}>
+                                                <Popconfirm title="Se borrará la entrada. ¿Quieres continuar?"
+                                                    onConfirm={() => this.borrarEntrada(pwSelect)}
+                                                    okText="Aceptar"
+                                                    cancelText="Cancelar"
+                                                >
+                                                    <Tag color="volcano" onClick={() => this.setState({ pwSelect })}><Icon type="delete" /> Eliminar</Tag>
+                                                </Popconfirm>
+                                            </PrivateComponent>
+                                            <Tag color="gold" onClick={() => this.setState({ modalEditarPws: true, pwSelect })}><Icon type="edit" /> Editar</Tag>
+                                        </div>
+                                        <Tag color="blue" onClick={() => this.setState({ modalPw: true, pwSelect })}><Icon type="search" /> Consultar</Tag>
                                     </div>
-                                    <Tag color="blue" onClick={() => this.setState({ modalPw: true, pwSelect })}><Icon type="search" /> Consultar</Tag>
-                                </div>
-                            )
-                        }
-                    ]} />
+                                )
+                            }
+                        ]} 
+                    />
 
                     <Collapse>
                         <Panel key="nueva" header="Nueva entrada">

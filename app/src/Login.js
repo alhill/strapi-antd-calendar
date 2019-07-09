@@ -17,9 +17,12 @@ class Login extends Component{
         }
     }
     componentDidMount() {
-        // To disabled submit button at the beginning.
         this.props.form.validateFields();
-        if(getToken()){ this.props.history.push("/") }
+        if(!this.props.errorCarga.error && this.props.auth){ 
+            console.log(this.props.auth)
+            console.log(this.props.errorCarga)
+            //this.props.history.push("/") 
+        }
     }
     
     handleSubmit = (e) => {
@@ -50,7 +53,7 @@ class Login extends Component{
                         this.props.dispatch(fetchUsuarios())
                         this.props.dispatch(fetchCalendario())
                         this.props.dispatch(fetchES())
-                        this.props.history.push("/calendario")
+                        this.props.history.push("/")
                     }
                 }).catch(err => console.log(err))
             }).catch(err => console.log(err))
@@ -121,7 +124,12 @@ class Login extends Component{
     }
 }
 
-export default Form.create({ name: 'login_form' })(connect()(Login))
+const mapStateToProps = state => ({
+    errorCarga: state.errorCarga,
+    auth: state.auth
+})
+
+export default Form.create({ name: 'login_form' })(connect(mapStateToProps)(Login))
 
 
 

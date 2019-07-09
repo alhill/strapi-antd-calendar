@@ -7,15 +7,13 @@ import moment from 'moment';
 import { getUserInfo, getToken } from './utils/auth';
 import ModuloRegistros from './modulosConfig/ModuloRegistros'
 import ModalInfoRegistros from './components/ModalInfoRegistros'
-import request from './utils/request';
-import { fetchES } from './actions';
+import { fetchES, cambiarMesES } from './actions';
 
 class Registro extends Component{
 
     state = {
         usuarios: [],
         userInfo: getUserInfo(),
-        mes: moment(),
         modalVisible: false, 
         modalLoading: false
     }
@@ -54,15 +52,16 @@ class Registro extends Component{
 
     componentDidMount() {
         if(this.props.es){
-            this.procesaES(this.state.mes.month(), this.state.mes.year())
+            this.procesaES(this.props.mesES.month(), this.props.mesES.year())
         }
-        // console.log( this.diasLaborables() )
-        // console.log( this.diasLaborables(2, 2019) )
     }
 
     componentDidUpdate(prevProps, prevState){
-        if(prevProps.es !== this.props.es || !(prevState.mes.isSame(this.state.mes, "month")) ){
-            this.procesaES(this.state.mes.month(), this.state.mes.year());
+        if(prevProps.es !== this.props.es){
+            this.procesaES(this.props.mesES.month(), this.props.mesES.year());
+        }
+        else if(!prevProps.mesES.isSame(this.props.mesES, "month")){
+            this.props.dispatch(fetchES(this.props.mesES))
         }
     }
 
@@ -72,7 +71,7 @@ class Registro extends Component{
             return moment().year(year).month(month).date(i+1).weekday() <= 4
         }).length
         const diasLibres = (this.props.dias.filter(d => {
-            return d.user && ( d.user._id === userId && d.aprobado === true && moment(d.fecha).month() === month)
+            return d.user && ( d.user._id === userId && d.aprobado === true && d.tipo === "libre" && moment(d.fecha).month() === month)
         })).length
         return diasEntreSemana - diasLibres - diasFestivos
     }
@@ -80,68 +79,78 @@ class Registro extends Component{
     procesaES = (month = moment().month() + 1, year = moment().year()) => {
 
         const diasDeEseMes = moment().month(month - 1).year(year).daysInMonth()
-        const usuarios = this.props.es.map(u => {
-            const duracionJornada = u.duracionjornada || 8;
-            const diasLaborables = this.diasLaborables(u._id, month, year)
-            const dias = Array(diasDeEseMes).fill(null)
-                .map((e, i) => moment().subtract(i, "days").format("YYYY-MM-DD"))
-                .map(d => u.registros.filter(r =>  moment(r.fecha).isSame(moment(d), "days") && moment(r.fecha).isSame(this.state.mes, "month"))
-                    .sort((a, b) => {
-                        if(moment(a.fecha).isBefore(moment(b.fecha))){ return -1 }
-                        else if(moment(b.fecha).isBefore(moment(a.fecha))){ return 1 }
-                        else{ return 0 }
-                    })
-                )
+        if(Array.isArray(this.props.es.users)){
+            const usuarios = this.props.es.users.map(u => {
+                const duracionJornada = u.duracionjornada || 8;
+                const diasLaborables = this.diasLaborables(u._id, month, year)
+                const dias = Array(diasDeEseMes).fill(null)
+                    .map((e, i) => moment().subtract(i, "days").format("YYYY-MM-DD"))
+                    .map(d => u.registros.filter(r =>  moment(r.fecha).isSame(moment(d), "days") && moment(r.fecha).isSame(this.props.mesES, "month"))
+                        .sort((a, b) => {
+                            if(moment(a.fecha).isBefore(moment(b.fecha))){ return -1 }
+                            else if(moment(b.fecha).isBefore(moment(a.fecha))){ return 1 }
+                            else{ return 0 }
+                        })
+                    )
 
-            const jornadas = dias.map((dia, i) => {
-                const arrayCachos = Array(Math.ceil(dia.length / 2)).fill(null).map((e, j) => {
-                    const a = moment(dia[(2*j)].fecha);
-                    const b = dia[(2*j)+1] ? moment(dia[(2*j)+1].fecha) : undefined;
-                    const m = b ? moment.duration(b.diff(a)) : ( a.isSame(moment(), "day") ? moment.duration(moment().diff(a)) : "-" )
-                    const horas = m !== "-" ? Math.round(m.as('hours')*100)/100 : "-"
-                    return {
-                        key: u._id + "-" + i + "-" + j,
-                        entrada: a.format(),
-                        aprobado: (dia[(2*j)].aprobado && (dia[(2*j)+1] ? dia[(2*j)+1].aprobado : true)) ? true : false,
-                        salida: b ? b.format() : "-",
-                        horas
-                    }
+                const jornadas = dias.map((dia, i) => {
+                    const arrayCachos = Array(Math.ceil(dia.length / 2)).fill(null).map((e, j) => {
+                        const a = moment(dia[(2*j)].fecha);
+                        const b = dia[(2*j)+1] ? moment(dia[(2*j)+1].fecha) : undefined;
+                        const m = b ? moment.duration(b.diff(a)) : ( a.isSame(moment(), "day") ? moment.duration(moment().diff(a)) : "-" )
+                        const horas = m !== "-" ? Math.round(m.as('hours')*100)/100 : "-"
+                        return {
+                            key: u._id + "-" + i + "-" + j,
+                            entrada: a.format(),
+                            aprobado: (dia[(2*j)].aprobado && (dia[(2*j)+1] ? dia[(2*j)+1].aprobado : true)) ? true : false,
+                            salida: b ? b.format() : "-",
+                            horas
+                        }
+                    })
+
+                    const tiempoDescanso = Array(arrayCachos.length > 0 ? arrayCachos.length - 1 : 0).fill(null).map((e, i) => {
+                        const comienzoDescanso = moment(arrayCachos[i].salida)
+                        const finDescanso = moment(arrayCachos[i+1].entrada)
+                        const duracionDescanso = Math.round(moment.duration(finDescanso.diff(comienzoDescanso)).as("hours")*100)/100
+                        return duracionDescanso
+                    }).reduce((a, b) => a + b, 0)
+
+                    const arrayHoras = arrayCachos.map(c => c.horas)
+                    const jornada = arrayCachos[0] ? {
+                        key: arrayCachos[0].key,
+                        entrada: arrayCachos[0].entrada,
+                        salida: arrayCachos.slice(-1)[0].salida,
+                        aprobado: arrayCachos.map(a => a.aprobado).includes(false) ? false : true,
+                        horas: !arrayHoras.includes("-") ? arrayHoras.reduce((a, b) => a + b, 0) : "-",
+                        usuario: u.username,
+                        registros: dia,
+                        empresa: {
+                            nombre: this.props.es.nombre,
+                            cif: this.props.es.cif,
+                            ccc: this.props.es.ccc
+                        },
+                        tiempoDescanso
+                    } : []
+                    return jornada
                 })
 
-                const tiempoDescanso = Array(arrayCachos.length > 0 ? arrayCachos.length - 1 : 0).fill(null).map((e, i) => {
-                    const comienzoDescanso = moment(arrayCachos[i].salida)
-                    const finDescanso = moment(arrayCachos[i+1].entrada)
-                    const duracionDescanso = Math.round(moment.duration(finDescanso.diff(comienzoDescanso)).as("hours")*100)/100
-                    return duracionDescanso
-                }).reduce((a, b) => a + b, 0)
-
-                const arrayHoras = arrayCachos.map(c => c.horas)
-                const jornada = arrayCachos[0] ? {
-                    key: arrayCachos[0].key,
-                    entrada: arrayCachos[0].entrada,
-                    salida: arrayCachos.slice(-1)[0].salida,
-                    aprobado: arrayCachos.map(a => a.aprobado).includes(false) ? false : true,
-                    horas: !arrayHoras.includes("-") ? arrayHoras.reduce((a, b) => a + b, 0) : "-",
-                    usuario: u.username,
-                    registros: dia,
-                    tiempoDescanso
-                } : []
-                return jornada
+                const horasTrabajadas = Math.round(jornadas.filter(j => j.aprobado).map(j => j.horas).filter(h => h !== "-" && h !== undefined).reduce((a, b) => a + b, 0) * 100 ) / 100
+                const horasMes = diasLaborables * duracionJornada
+                const porcentajeHoras = Math.round((horasTrabajadas / (diasLaborables * duracionJornada)) * 10000) / 100
+                const horasPendientes = Math.round((horasMes - horasTrabajadas) * 100 ) / 100
+                const empresa = {
+                    nombre: this.props.es.razonSocial,
+                    cif: this.props.es.cif,
+                    ccc: this.props.es.ccc
+                }
+                return { ...u, jornadas, horasTrabajadas, horasPendientes, porcentajeHoras, duracionJornada, diasLaborables, empresa }
             })
-
-            const horasTrabajadas = Math.round(jornadas.filter(j => j.aprobado).map(j => j.horas).filter(h => h !== "-" && h !== undefined).reduce((a, b) => a + b, 0) * 100 ) / 100
-            const horasMes = diasLaborables * duracionJornada
-            const porcentajeHoras = Math.round((horasTrabajadas / (diasLaborables * duracionJornada)) * 10000) / 100
-            const horasPendientes = Math.round((horasMes - horasTrabajadas) * 100 ) / 100
-
-            //console.log({ ...u, jornadas, horasTrabajadas, horasPendientes, porcentajeHoras, duracionJornada, diasLaborables })
-            return { ...u, jornadas, horasTrabajadas, horasPendientes, porcentajeHoras, duracionJornada, diasLaborables }
-        })
-        
-        this.setState({ 
-            usuarios,
-            jornadasPorAprobar: [].concat.apply([], usuarios.filter(u => u._id === getUserInfo()._id || (getUserInfo().manager && !this.props.blueCollar)).map(u => u.jornadas)).filter(j => !Array.isArray(j) && !j.aprobado)
-        })
+            
+            this.setState({ 
+                usuarios,
+                jornadasPorAprobar: [].concat.apply([], usuarios.filter(u => u._id === getUserInfo()._id || (getUserInfo().manager && !this.props.blueCollar)).map(u => u.jornadas)).filter(j => !Array.isArray(j) && !j.aprobado)
+            })
+        }
     }
 
     handleRowClick = (fila, apr) => {
@@ -156,7 +165,15 @@ class Registro extends Component{
             <Layout style={{height:"100vh"}}>
                 <Frame isLogged={ getToken() ? true : false }>
                     <h1>Jornadas</h1>
-                    <MonthPicker placeholder="Seleccionar mes" value={this.state.mes} onChange={mes => this.setState({ mes })} style={{ marginBottom: 20 }}/>
+                    <MonthPicker 
+                        placeholder="Seleccionar mes" 
+                        value={this.props.mesES} 
+                        onChange={mes => {
+                            //this.setState({ mes })
+                            this.props.dispatch(cambiarMesES(mes))
+                        }}
+                        style={{ marginBottom: 20 }}
+                    />
                     {/*( this.state.userInfo.manager && !this.props.blueCollar)*/ true &&
                         <div>
                             <h3>Jornadas pendientes de aprobación</h3>
@@ -210,7 +227,14 @@ class Registro extends Component{
                                 </div>} key={u._id}>
                                     <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-evenly" }}>
                                         <Statistic title="Horas trabajadas" value={ Math.trunc(u.horasTrabajadas, 10) + "h " + Math.round((u.horasTrabajadas % 1) * 60) + "m"  } />
-                                        <Statistic title="Horas pendientes" value={ Math.trunc(u.horasPendientes, 10) + "h " + Math.round((u.horasPendientes % 1) * 60) + "m" } />
+                                        <Statistic 
+                                            title={`Horas ${u.horasPendientes >= 0 ? "pendientes" : "extra"}`} 
+                                            valueStyle={{ color: u.horasPendientes < 0 ? "red" : "inherit" }} 
+                                            value={ u.horasPendientes > 0 ?
+                                                Math.trunc(u.horasPendientes, 10) + "h " + Math.round((u.horasPendientes % 1) * 60) + "m" :
+                                                Math.trunc(-u.horasPendientes, 10) + "h " + Math.round((-u.horasPendientes % 1) * 60) + "m"
+                                            }
+                                        />
                                         <Statistic title="Días laborables de este mes" value={ u.diasLaborables } />
                                         <Statistic title="Duración de jornada" value={ u.duracionJornada + "h" } />
                                     </div>
@@ -259,6 +283,7 @@ class Registro extends Component{
 const mapStateToProps = state => {
     return {
         es: state.es,
+        mesES: state.mesES,
         dias: state.dias,
         blueCollar: state.blueCollar
     }

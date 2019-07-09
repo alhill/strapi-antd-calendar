@@ -26,13 +26,27 @@ import Configuracion from './Configuracion';
 import { Provider } from 'react-redux';
 import { getUserInfo } from './utils/auth'
 import store from './store';
-import { fetchCalendario, fetchUsuarios, fetchES, fetchDocumentos, fetchGrupos, fetchPws, fetchAuth } from './actions'
+import { fetchCalendario, fetchUsuarios, fetchES, fetchDocumentos, fetchGrupos, fetchPws, fetchAuth, fetchEntradas } from './actions'
+import Exportacion from './Exportacion';
 
 moment.locale('es');
 
 const socket = io.connect(process.env.REACT_APP_API_URL, {
   transports: [ 'websocket' ]
 });
+
+class DebugRouter extends BrowserRouter {
+  constructor(props){
+    super(props);
+    console.log('initial history is: ', JSON.stringify(this.history, null,2))
+    this.history.listen((location, action)=>{
+      console.log(
+        `The current URL is ${location.pathname}${location.search}${location.hash}`
+      )
+      console.log(`The last navigation action was ${action}`, JSON.stringify(this.history, null,2));
+    });
+  }
+}
 
 class App extends Component {
   componentDidMount(){
@@ -42,6 +56,7 @@ class App extends Component {
       store.dispatch(fetchUsuarios())
       store.dispatch(fetchCalendario())
       store.dispatch(fetchES())
+      store.dispatch(fetchEntradas())
       store.dispatch(fetchDocumentos())
       store.dispatch(fetchGrupos())
       store.dispatch(fetchPws())
@@ -64,6 +79,7 @@ class App extends Component {
                 <PrivateRoute onlyManager={true} exact path="/analitica" component={Analitica} />
                 <PrivateRoute onlyManager={true} exact path="/grupos" component={Grupos} />
                 <PrivateRoute onlyManager={true} exact path="/configuracion" component={Configuracion} />
+                <PrivateRoute onlyManager={true} exact path="/exportacion" component={Exportacion} />
                 <PrivateRoute exact path="/usuario/:id" component={EditUsuario} />
                 <PrivateRoute exact path="/registro" component={Registro} />
                 <PrivateRoute exact path="/nuevousuario" component={NuevoUsuario} />

@@ -3,6 +3,8 @@ import { getToken, getUserInfo } from './utils/auth';
 import { Layout, Upload, message, Icon, Form, Input, Button } from 'antd'
 import Frame from './Frame';
 import request from './utils/request';
+import { fetchAuth } from './actions'
+import { connect } from 'react-redux'
 
 
 class Perfil extends Component{
@@ -10,6 +12,13 @@ class Perfil extends Component{
     state = {
         loading: false,
         nombre: getUserInfo().nombre || ""    
+    }
+
+    componentDidMount(){
+        console.log(this.props.auth)
+    }
+    componentDidUpdate(){
+        console.log(this.props.auth)
     }
 
     handleUpload = ({ onSuccess, onError, file }) => {
@@ -41,6 +50,7 @@ class Perfil extends Component{
                 let userInfo = getUserInfo()
                 userInfo.avatar = data[0]
                 window.localStorage.setItem("user", JSON.stringify(userInfo))
+                this.props.dispatch(fetchAuth())
             }).catch(err => {
                 this.setState({ loading: false })
                 console.log(err)
@@ -59,6 +69,7 @@ class Perfil extends Component{
             let userInfo = getUserInfo()
             userInfo.nombre = this.state.nombre
             window.localStorage.setItem("user", JSON.stringify(userInfo))
+            this.props.dispatch(fetchAuth())
             message.success("Los datos se guardaron correctamente")
         }).catch(err => {
             message.error("Ocurrió un error durante el guardado de datos")
@@ -74,22 +85,26 @@ class Perfil extends Component{
               <div className="ant-upload-text">Upload</div>
             </div>
         );
-        const imageUrl = this.state.imageUrl;
+        const imageUrl = this.props.auth && this.props.auth.avatar && process.env.REACT_APP_API_URL + this.props.auth.avatar.url;
         return(
             <Layout style={{height:"100vh"}}>
                 <Frame isLogged={ getToken() ? true : false }>
                     <h1>Perfil</h1>
                     <div style={{ width: "320px", marginBottom: 20 }}>
-                        <Upload
-                            name="avatar"
-                            listType="picture-card"
-                            className="avatar-uploader"
-                            showUploadList={false}
-                            onChange={this.handleChange}
-                            customRequest={this.handleUpload}
-                        >
-                            {imageUrl ? <img src={imageUrl} alt="avatar" /> : uploadButton}
-                        </Upload>
+                        <Form.Item label="Avatar" style={{ marginRight: 20 }}>
+                            <Upload
+                                name="avatar"
+                                defaultFileList={[(this.props.auth && this.props.auth.avatar)]}
+                                listType="picture-card"
+                                className="avatar-uploader"
+                                showUploadList={false}
+                                onChange={this.handleChange}
+                                customRequest={this.handleUpload}
+
+                            >
+                                {imageUrl ? <img src={imageUrl} style={{ maxHeight: 300, maxWidth: 300, objectFit: "cover" }} alt="avatar" /> : uploadButton}
+                            </Upload>
+                        </Form.Item>
 
                         <Form.Item label="Nombre" style={{ marginRight: 20 }}>
                             <Input type="text" value={ this.state.nombre } onChange={e => this.setState({ nombre: e.target.value })} />
@@ -103,4 +118,8 @@ class Perfil extends Component{
     }
 }
 
-export default Perfil
+const mapStateToProps = state => ({
+    auth: state.auth
+})
+
+export default connect(mapStateToProps)(Perfil)

@@ -1,14 +1,40 @@
 import { 
-    CARGAR_USUARIOS, CARGAR_CALENDARIO, CARGAR_ES, CARGAR_DOCUMENTOS, CARGAR_GRUPOS, CARGAR_PWS, CARGAR_AUTH, CAMBIAR_BLUE_COLLAR
+    CARGAR_USUARIOS, 
+    CARGAR_CALENDARIO, 
+    CARGAR_ES, 
+    CARGAR_DOCUMENTOS, 
+    CARGAR_GRUPOS, 
+    CARGAR_PWS, 
+    CARGAR_AUTH, 
+    CARGAR_ENTRADAS, 
+    CAMBIAR_BLUE_COLLAR, 
+    CAMBIAR_MES_ES, 
+    FALLO_CARGA
 } from "../constants/action-types"
 import request from "../utils/request"
 import gql from "../utils/gql"
 import { getUserInfo } from '../utils/auth'
-import { queryCalendario, queryES } from '../queries'
+import { gestionaError } from '../utils/func'
+import { queryCalendario, queryES, queryEntradas } from '../queries'
+import moment from 'moment'
 
 export function cambiarBlueCollar(payload) {
     return {
         type: CAMBIAR_BLUE_COLLAR,
+        payload
+    }
+}
+
+export function falloCarga(payload) {
+    return {
+        type: FALLO_CARGA,
+        payload
+    }
+}
+
+export function cambiarMesES(payload) {
+    return {
+        type: CAMBIAR_MES_ES,
         payload
     }
 }
@@ -27,7 +53,7 @@ export const fetchUsuarios = () => {
             dispatch(cargarUsuarios(response))
         })
         .catch(error => {
-            throw(error);
+            gestionaError(error, dispatch, "usuarios");
         });
     };
 };
@@ -45,7 +71,7 @@ export const fetchAuth = () => {
             dispatch(cargarAuth(response))
         })
         .catch(error => {
-            throw(error);
+            gestionaError(error, dispatch, "auth");
         });
     };
 };
@@ -63,7 +89,7 @@ export const fetchCalendario = () => {
             dispatch(cargarCalendario(response.data.dias))
         })
         .catch(error => {
-            throw(error);
+            gestionaError(error, dispatch, "calendario");
         });
     };
 };
@@ -75,13 +101,17 @@ export function cargarES(payload) {
     }
 }
   
-export const fetchES = () => {
+export const fetchES = (mes = moment()) => {
     return (dispatch) => {
-        return request(gql(queryES(getUserInfo()))).then(response => {
-            dispatch(cargarES(response.data.equipo && response.data.equipo.users))
+        return request(gql(queryES({
+               equipo: getUserInfo().equipo,
+               desde: mes.clone().startOf("month").utc().format(),
+               hasta: mes.clone().endOf("month").utc().format()
+            }))).then(response => {
+            dispatch(cargarES(response.data.equipo))
         })
         .catch(error => {
-            throw(error);
+            gestionaError(error, dispatch, "es");
         });
     };
 };
@@ -99,7 +129,7 @@ export const fetchDocumentos = () => {
             dispatch(cargarDocumentos(response))
         })
         .catch(error => {
-            throw(error);
+            gestionaError(error, dispatch, "documentos");
         });
     };
 };
@@ -117,7 +147,7 @@ export const fetchGrupos = () => {
             dispatch(cargarGrupos(response))
         })
         .catch(error => {
-            throw(error);
+            gestionaError(error, dispatch, "grupos");
         });
     };
 };
@@ -135,7 +165,25 @@ export const fetchPws = () => {
             dispatch(cargarPws(response))
         })
         .catch(error => {
-            throw(error);
+            gestionaError(error, dispatch, "pws");
+        });
+    };
+};
+
+export function cargarEntradas(payload) {
+    return {
+        type: CARGAR_ENTRADAS,
+        payload
+    }
+}
+  
+export const fetchEntradas = () => {
+    return (dispatch) => {
+        return request(gql(queryEntradas(getUserInfo()))).then(response => {
+            dispatch(cargarEntradas(response))
+        })
+        .catch(error => {
+            gestionaError(error, dispatch, "entradas");
         });
     };
 };

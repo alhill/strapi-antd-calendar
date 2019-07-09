@@ -1,8 +1,11 @@
 import React, { Component } from 'react'
 import { getToken, getUserInfo } from './utils/auth';
-import { Layout } from 'antd'
+import { mayusculizer } from './utils/func'
+import { Layout, Card } from 'antd'
 import moment from 'moment'
 import Frame from './Frame';
+import { connect } from 'react-redux'
+import renderHTML from 'react-render-html';
 
 
 class Home extends Component{
@@ -33,12 +36,45 @@ class Home extends Component{
         }).catch(err => { console.log(err) })
     }
 
+    componentDidUpdate
+
     render(){
+        let { auth } = this.props
+        if(!auth){ auth = {}}
         return(
             <Layout style={{height:"100vh"}}>
                 <Frame isLogged={ getToken() ? true : false }>
-                    <h1>Hola, { getUserInfo().nombre }</h1>
+                    <h1>Hola, { mayusculizer(getUserInfo().nombre) }</h1>
+                    {
+                        moment(auth.finalcontrato && !auth.indefinido).isBefore(moment().add(1, "day")) ?
+                            <p>Trabajaste para { auth.equipo && mayusculizer(auth.equipo.nombre)} entre el { moment(auth.iniciocontrato).format("LL")} y el { moment(auth.finalcontrato).format("LL")}, { moment(auth.finalcontrato).diff(moment(auth.iniciocontrato), "days")} días</p> :
+                            <div>
+                                <p>Llevas trabajando para { auth.equipo && mayusculizer(auth.equipo.nombre)} desde el { moment(auth.iniciocontrato).format("LL")}, hace { moment().diff(moment(auth.iniciocontrato), "days")} días</p>
+                                { !auth.indefinido &&
+                                    <p>Tienes contrato hasta el { moment(auth.finalcontrato).format("LL")}, en { moment(auth.finalcontrato).diff(moment(), "days")} días</p>
+                                }
+                            </div>
+                    }
                     <br />
+                    
+                    <h2>Últimas noticias</h2>
+                    {
+                        this.props.entradas.map(e => (
+                            <div key={e._id} style={{ width: "100%", display: "flex", padding: 0, backgroundColor: "white", borderRadius: 5, overflow: "hidden", marginBottom: "2em" }}>
+                                <div style={{ display: "flex", flexDirection: "column", flex: 2, backgroundColor: "#333", justifyContent: "center", alignItems: "center" }}>
+                                    <img src={e.imagen && process.env.REACT_APP_API_URL + e.imagen.url} style={{ maxWidth: "100%", maxHeight: 300, objectFit: "contain", objectPosition: "center center" }} />
+                                </div>
+                                <div style={{ padding: "2em", flex: 3}}>
+                                    <h2>{moment(e.createdAt).format("YYYY-MM-DD") + "  " + e.titulo}</h2>
+                                    {renderHTML(e.resumen)}
+                                </div>
+                            </div>
+                        ))
+                    }
+
+                    <br />
+
+                    <h2>El tiempo</h2>
                     {
                         this.state.meteo && this.state.meteo.map((d, i) => {
                             return <div key={"d" + i}>
@@ -52,13 +88,13 @@ class Home extends Component{
                                     marginBottom: "1em"
                                 }}>
                                     {
-                                        Object.values(d)[0].map(r => (
+                                        Object.values(d)[0].map((r, i) => (
                                             <div style={{
                                                 display: "flex",
                                                 flex: 1,
-                                                flexDirection: "column"
+                                                flexDirection: "column",
                                             }}>
-                                                <div style={{
+                                                <div key={"c"+i} style={{
                                                     backgroundColor: "#333",
                                                     color: "white",
                                                     padding: 5,
@@ -88,4 +124,9 @@ class Home extends Component{
     }
 }
 
-export default Home
+const mapStateToProps = state => ({
+    auth: state.auth,
+    entradas: state.entradas
+})
+
+export default connect(mapStateToProps)(Home)

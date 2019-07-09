@@ -7,6 +7,9 @@ import blueCollar from './blueCollar'
 import grupos from './grupos'
 import pws from './pws'
 import auth from './auth'
+import entradas from './entradas'
+import mesES from './mesES'
+import errorCarga from './errorCarga'
 
 const rootReducer = combineReducers({
     usuarios,
@@ -16,7 +19,10 @@ const rootReducer = combineReducers({
     blueCollar,
     grupos, 
     pws,
-    auth
+    auth,
+    mesES,
+    entradas,
+    errorCarga
 })
 
 export default rootReducer;

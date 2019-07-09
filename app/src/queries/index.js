@@ -20,13 +20,20 @@ export function queryCalendario(variables){
 export function queryES(variables){
     return variables.equipo ? `{
     equipo(id: "${ variables.equipo }"){
+        razonSocial
+        cif
+        ccc
         users{
             _id
             username
+            nombre
+            apellidos
+            nif
+            nuss
             avatar{
                 url
             }
-            registros{
+            registros(limit: 1000000000, where: {fecha_lte: "${ variables.hasta }", fecha_gte: "${ variables.desde }"}){
                 _id
                 fecha
                 idcard
@@ -42,6 +49,23 @@ export function queryES(variables){
             }
             duracionjornada
         }
+    }
+}` : "{}"
+}
+
+export function queryEntradas(variables){
+    return variables.equipo ? `
+{
+    entradas(where: {equipo: "${variables.equipo}"}, sort: "createdAt:desc", limit: 3){
+        _id
+        createdAt
+        titulo
+        imagen{
+            url
+        }
+        resumen
+        cuerpo
+        slug
     }
 }` : "{}"
 }
